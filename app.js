@@ -53,7 +53,7 @@ require('./passport')(passport); // Pass passport for configuration
 // Set up our express application
 app.use(morgan('dev')); // Log every request to the console
 app.use(cookieParser()); // Read cookies (needed for auth)
-app.use(bodyParser.urlencoded({extended: true})); // Get information from html forms
+app.use(bodyParser.urlencoded({extended: true})); // Added explicit method and extended option to address deprecation warnings
 app.set('view engine', 'ejs'); // Set up ejs for templating
 
 // Configure app to use bodyParser for API operations (not used here)
@@ -65,7 +65,7 @@ app.use(session({
 	secret: sessionSecret,
 	saveUninitialized: true,
 	resave: true
-}));
+})); // Added saveUninitialized and resave options to address deprecation warnings
 app.use(passport.initialize());
 app.use(passport.session()); // Persistent login sessions
 app.use(flash()); // Use connect-flash for flash messages stored in session
