@@ -53,7 +53,7 @@ require('./passport')(passport); // Pass passport for configuration
 // Set up our express application
 app.use(morgan('dev')); // Log every request to the console
 app.use(cookieParser()); // Read cookies (needed for auth)
-app.use(bodyParser()); // Get information from html forms
+app.use(bodyParser.urlencoded({extended: true})); // Get information from html forms
 app.set('view engine', 'ejs'); // Set up ejs for templating
 
 // Configure app to use bodyParser for API operations (not used here)
@@ -61,7 +61,11 @@ app.set('view engine', 'ejs'); // Set up ejs for templating
 // app.use(bodyParser.json());
 
 // Required for passport
-app.use(session({secret: sessionSecret})); // Session secret
+app.use(session({
+	secret: sessionSecret,
+	saveUninitialized: true,
+	resave: true
+}));
 app.use(passport.initialize());
 app.use(passport.session()); // Persistent login sessions
 app.use(flash()); // Use connect-flash for flash messages stored in session
