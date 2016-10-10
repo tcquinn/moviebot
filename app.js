@@ -7,7 +7,6 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 var flash = require('connect-flash');
 var morgan = require('morgan');
-var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 
@@ -52,13 +51,8 @@ require('./passport')(passport); // Pass passport for configuration
 
 // Set up our express application
 app.use(morgan('dev')); // Log every request to the console
-app.use(cookieParser()); // Read cookies (needed for auth)
 app.use(bodyParser.urlencoded({extended: true})); // Added explicit method and extended option to address deprecation warnings
 app.set('view engine', 'ejs'); // Set up ejs for templating
-
-// Configure app to use bodyParser for API operations (not used here)
-// app.use(bodyParser.urlencoded({extended: true}));
-// app.use(bodyParser.json());
 
 // Required for passport
 app.use(session({
