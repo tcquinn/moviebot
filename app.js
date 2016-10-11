@@ -9,6 +9,7 @@ var flash = require('connect-flash');
 var morgan = require('morgan');
 var bodyParser = require('body-parser');
 var session = require('express-session');
+var MongoStore = require('connect-mongo')(session);
 
 // Set our configuration variables
 var config = require('./config');
@@ -58,7 +59,8 @@ app.set('view engine', 'ejs'); // Set up ejs for templating
 app.use(session({
 	secret: sessionSecret,
 	saveUninitialized: true,
-	resave: true
+	resave: true,
+	store: new MongoStore({ mongooseConnection: mongoose.connection })
 })); // Added saveUninitialized and resave options to address deprecation warnings
 app.use(passport.initialize());
 app.use(passport.session()); // Persistent login sessions
