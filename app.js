@@ -2,6 +2,7 @@
 
 // Call the packages we need
 var express = require('express');
+var path = require('path');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var passport = require('passport');
@@ -52,7 +53,7 @@ require('./passport')(passport); // Pass passport for configuration
 
 // Set up our express application
 app.use(morgan('dev')); // Log every request to the console
-app.use(bodyParser.urlencoded({extended: true})); // Added explicit method and extended option to address deprecation warnings
+app.use(bodyParser.urlencoded({extended: true})); // We're going to be parsing HTML forms
 app.set('view engine', 'ejs'); // Set up ejs for templating
 
 // Required for passport
@@ -61,10 +62,11 @@ app.use(session({
 	saveUninitialized: true,
 	resave: true,
 	store: new MongoStore({ mongooseConnection: mongoose.connection })
-})); // Added saveUninitialized and resave options to address deprecation warnings
+})); // Use MongoDB for cookie store since we have it
 app.use(passport.initialize());
 app.use(passport.session()); // Persistent login sessions
 app.use(flash()); // Use connect-flash for flash messages stored in session
+app.use('/static', express.static(path.join(__dirname, 'public')));
 
 // Routes
 

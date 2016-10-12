@@ -12,7 +12,7 @@ module.exports = function(app, passport) {
     });
     // Process the login form
     app.post('/login', passport.authenticate('local-login', {
-        successRedirect : '/profile', // Redirect to the secure profile section
+        successRedirect : '/list', // Redirect to the secure section
         failureRedirect : '/login', // Redirect back to the signup page if there is an error
         failureFlash : true // Allow flash messages
     }));
@@ -23,15 +23,15 @@ module.exports = function(app, passport) {
     });
     // Process the signup form
     app.post('/signup', passport.authenticate('local-signup', {
-        successRedirect : '/profile', // Redirect to the secure profile section
+        successRedirect : '/list', // Redirect to the secure section
         failureRedirect : '/signup', // Redirect back to the signup page if there is an error
         failureFlash : true // Allow flash messages
     }));
-    // Profile section
+    // Secure section
 	// We will want this protected so you have to be logged in to visit
     // We will use route middleware to verify this (the isLoggedIn function)
-    app.get('/profile', isLoggedIn, function(req, res) {
-        res.render('profile.ejs', {
+    app.get('/list', isLoggedIn, function(req, res) {
+        res.render('list.ejs', {
             user : req.user // Get the user out of session and pass to template
         });
     });
