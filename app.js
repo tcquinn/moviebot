@@ -2,17 +2,17 @@
 
 // Call the packages we need
 var express = require('express');
-var path = require('path');
-var bodyParser = require('body-parser');
-var mongoose = require('mongoose');
-var passport = require('passport');
-var flash = require('connect-flash');
-var morgan = require('morgan');
-var bodyParser = require('body-parser');
-var session = require('express-session');
-var MongoStore = require('connect-mongo')(session);
+var morgan = require('morgan'); // Logging
+var path = require('path'); // Building file paths
+var bodyParser = require('body-parser'); // Parsing incoming data
+var session = require('express-session'); // Handling cookies
+var MongoStore = require('connect-mongo')(session); // Storing cookies in our database
+var mongoose = require('mongoose'); // Interfacing with our database
+var passport = require('passport'); // Creating and authenticating users
+var flash = require('connect-flash'); // Passing messages around in a session
 
-// Set our configuration variables
+// Load our configuration variables
+// We can override the values in config.js using environment variables
 var config = require('./config');
 
 var expressPort = process.env.EXPRESS_PORT || config.express.port;
@@ -49,24 +49,22 @@ var mongodbUri = (
 mongoose.connect(mongodbUri);
 
 // Configure passport 
-require('./passport')(passport); // Pass passport for configuration
+require('./passport')(passport); // Pass passport obect for configuration
 
-// Set up our express application
+// Set up our express middleware
 app.use(morgan('dev')); // Log every request to the console
 app.use(bodyParser.urlencoded({extended: true})); // We're going to be parsing HTML forms
 app.set('view engine', 'ejs'); // Set up ejs for templating
-
-// Required for passport
 app.use(session({
 	secret: sessionSecret,
 	saveUninitialized: true,
 	resave: true,
 	store: new MongoStore({ mongooseConnection: mongoose.connection })
-})); // Use MongoDB for cookie store since we have it
-app.use(passport.initialize());
-app.use(passport.session()); // Persistent login sessions
+})); // Create sessions and store cookies in MongoDB
+app.use(passport.initialize()); // Initialize passport
+app.use(passport.session()); // Enable passport to write user ID into cookies
 app.use(flash()); // Use connect-flash for flash messages stored in session
-app.use('/static', express.static(path.join(__dirname, 'public')));
+app.use('/static', express.static(path.join(__dirname, 'public'))); // Serve static files from 'public'
 
 // Routes
 
