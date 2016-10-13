@@ -25,6 +25,8 @@ var mongodbPassword = process.env.MONGODB_PASSWORD || config.mongodb.password;
 
 var sessionSecret = process.env.SESSION_SECRET || config.session.secret;
 
+var morganFormat = process.env.MORGAN_FORMAT || config.morgan.format;
+
 // Instantiate our app
 var app = express();
 
@@ -52,7 +54,7 @@ mongoose.connect(mongodbUri);
 require('./passport')(passport); // Pass passport obect for configuration
 
 // Set up our express middleware
-app.use(morgan('dev')); // Log every request to the console
+app.use(morgan(morganFormat)); // Set up logging
 app.use(bodyParser.urlencoded({extended: true})); // We're going to be parsing HTML forms
 app.set('view engine', 'ejs'); // Set up ejs for templating
 app.use(session({
