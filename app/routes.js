@@ -73,7 +73,14 @@ module.exports = function(app, passport) {
         req.user.local.movieList = req.body.movieList;
 		// Save the movie list
 		req.user.save(function(err) {
-			if (err) throw err;
+			if (err) {
+				console.log("Inside callback function of POST /api/movielists");
+				console.log("Error occurred when attempting req.user.save");
+				console.log("err:");
+				console.log(err);
+				console.log("Throwing err")
+				throw err;
+			}
 		});
 		// Return the object we just saved
         res.json({movieList: req.user.local.movieList});

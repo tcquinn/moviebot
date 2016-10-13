@@ -16,6 +16,15 @@ module.exports = function(passport) {
     // Deserialize the user
     passport.deserializeUser(function(id, done) {
         User.findById(id, function(err, user) {
+			if (err) {
+				console.log("Inside callback function of passport.deserializeUser");
+				console.log("Error occurred when attempting User.findbyId");
+				console.log("err:");
+				console.log(err);
+				console.log("user:");
+				console.log(user);
+				console.log("Returning done(err, user)");
+			};
             done(err, user);
         });
     });
@@ -36,7 +45,16 @@ module.exports = function(passport) {
 			// (We are checking to see if the user trying to login already exists)
 			User.findOne({ 'local.email' :  email }, function(err, user) {
 				// If there are any errors, return the error
-				if (err) return done(err);
+				if (err) {
+					console.log("Inside callback function of 'local-signup' strategy");
+					console.log("Error occurred when attempting User.findOne");
+					console.log("err:");
+					console.log(err);
+					console.log("user:");
+					console.log(user);
+					console.log("Returning done(err)");
+					return done(err);
+				}
 				// Check to see if there is already a user with that email
 				if (user) {
 					return done(null, false, req.flash('signupMessage', 'That email is already taken.'));
@@ -50,7 +68,14 @@ module.exports = function(passport) {
 					newUser.local.password = newUser.generateHash(password);
 					// Save the user in the database
 					newUser.save(function(err) {
-						if (err) throw err;
+						if (err){
+							console.log("Inside callback function of 'local-signup' strategy");
+							console.log("Error occurred when attempting newUser.save");
+							console.log("err:");
+							console.log(err);
+							console.log("Throwing err")
+							throw err;
+						}
 						return done(null, newUser);
 					});
 				}
@@ -72,7 +97,16 @@ module.exports = function(passport) {
         // We are checking to see if the user trying to login exists
         User.findOne({ 'local.email' :  email }, function(err, user) {
             // If there are any errors, return the error before anything else
-            if (err) return done(err);
+            if (err){
+				console.log("Inside callback function of 'local-login' strategy");
+				console.log("Error occurred when attempting User.findOne");
+				console.log("err:");
+				console.log(err);
+				console.log("user:");
+				console.log(user);
+				console.log("Returning done(err)");
+				return done(err);
+			}
             // If no user is found, return an error
             if (!user) {
                 return done(null, false, req.flash('loginMessage', 'No user found.'));
