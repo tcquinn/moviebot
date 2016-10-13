@@ -89,6 +89,7 @@ function isLoggedIn(req, res, next) {
     // If they aren't, redirect them to the home page
     res.redirect('/');
 }
+
 function isLoggedInApi(req, res, next) {
     // If user is authenticated in the session, carry on 
     if (req.isAuthenticated()) return next();
