@@ -1,3 +1,4 @@
+// public/javascripts/script.js
 
 // Run main function once page has finished loading
 $(document).ready(function() {
@@ -14,6 +15,62 @@ $(document).ready(function() {
 	// Clear error boxes
 	clearSearchResultsErrorMessage();
 	clearMovieListErrorMessage();
+	//Initialize movieList and movieData
+	$.ajax({
+		url: "../api/movielists",
+		dataType: "json",
+		// Callback function if request is successful
+		success: function(movieListJSON, textStatus, jqXHR) {
+			console.log("Initializing movie data: success callback");
+			console.log("movieListJSON:");
+			console.log(movieListJSON);
+			movieList = movieListJSON.movieList || [];
+			console.log("movieList:");
+			console.log(movieList);
+			for (var i=0; i < movieList.length; i += 1) {
+				console.log("Writing placeholder movie data for:");
+				console.log(movieList[i]);
+				movieData[movieList[i]] = {
+					title: "?",
+					releaseYear: "?",
+					netflixStreaming: "?",
+					amazonStreaming: "?",
+					updatedStreaming: "Never",
+					amazonRental: "?",
+					iTunesRental: "?",
+					googlePlayRental: "?",
+					vuduRental: "?",
+					updatedRental: "Never"
+				};
+			};
+			console.log("Ready to draw movie list table");
+			console.log("movieData:")
+			console.log(movieData);
+			console.log("movieList:");
+			console.log(movieList);
+			drawMovieListTable(movieData, movieList);
+			// Click Update buttons next to movies to fill in the streaming info
+			$('button.updateInfoButton').click();
+		},
+		// Callback function if request is not successful
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log("Initializing movie data: error callback");
+			console.log("jqXHR:");
+			console.log(jqXHR);
+			console.log("textStatus:");
+			console.log(textStatus);
+			console.log("errorThrown:");
+			console.log(errorThrown);
+			// Display error message
+			displayMovieListErrorMessage(
+				'Server error encountered when initializing list'
+			);
+		},
+		// Callback function whether or not request was successful
+		complete: function(jqXHR, textStatus) {
+			console.log("Initializing movie data: complete callback");
+		}
+	});
 	// Event handler if user clicks on Search buttton
 	$('button.searchButton').click(function() {
 		// Disable search button and search box
@@ -129,6 +186,8 @@ $(document).ready(function() {
 		movieList.push(movieID);
 		// Refresh movie table on page
 		drawMovieListTable(movieData, movieList);
+		// Save movie list
+		saveMovieList(movieList);
 		// Click Update button next to movie to fill in the streaming info
 		$('button.updateInfoButton').last().click();
 	});
@@ -138,8 +197,53 @@ $(document).ready(function() {
 		$(this).addClass("disabled");
 		// Extract movie ID from button data
 		var movieID = $(this).data().movieid;
-		// Record that we are sending two update requests
-		updateRequestsPending = updateRequestsPending + 2;
+		// Record that we are sending three update requests
+		updateRequestsPending = updateRequestsPending + 3;
+		// Send query for title and release year
+		$.ajax({
+			url: "http://www.canistream.it/services/search",
+			data: {
+				movieID: movieID,
+			},
+			// Use JSONP to avoid same origin policy issues
+			dataType: "jsonp",
+			// Ensure that 'this' in the callback functions refer to Update button
+			context: this,
+			// Callback function if request is successful
+			success: function(data, textStatus, jqXHR) {
+				console.log("In success callback of updating title and release year");
+				console.log("Data returned:");
+				console.log(data);
+				// Clear any previous error message
+				clearMovieListErrorMessage();
+				// Check if movie is still in data
+				if(movieID in movieData){
+					// If yes, copy query results into movie data
+					movieData[movieID].title = data[0].title || "?";
+					movieData[movieID].releaseYear = data[0].year || "?";
+				}
+				// Refresh movie table on page
+				drawMovieListTable(movieData, movieList);
+			},
+			// Callback function if request is not successful
+			error: function(jqXHR, textStatus, errorThrown) {
+				// Display an error message
+				displayMovieListErrorMessage(
+					'Server error encountered when updating title and release year for "' +
+					movieID +
+					'"'
+				);
+			},
+			// Callback function whether or not request is successful
+			complete: function(jqXHR, textStatus) {
+				// Record that one of the requests has returned
+				updateRequestsPending--;
+				// If all requests have returned, re-enable update button
+				if(updateRequestsPending === 0) {
+					$(this).removeClass("disabled");					
+				}
+			}
+		});
 		// Send query for instant streaming info
 		$.ajax({
 			url: "http://www.canistream.it/services/query",
@@ -154,6 +258,9 @@ $(document).ready(function() {
 			context: this,
 			// Callback function if request is successful
 			success: function(streamingResult, textStatus, jqXHR) {
+				console.log("In success callback of updating instant streaming info");
+				console.log("Data returned:");
+				console.log(streamingResult);
 				// Clear any previous error message
 				clearMovieListErrorMessage();
 				// Check if movie is still in data
@@ -199,6 +306,9 @@ $(document).ready(function() {
 			context: this,
 			// Callback function if request is successful
 			success: function(data, textStatus, jqXHR) {
+				console.log("In success callback of updating streaming rental info");
+				console.log("Data returned:");
+				console.log(data);
 				// Clear any previous error message
 				clearMovieListErrorMessage();
 				// Check if movie is still in data
@@ -248,6 +358,8 @@ $(document).ready(function() {
 		}
 		// Refresh movie table on page
 		drawMovieListTable(movieData, movieList);
+		// Save movie list
+		saveMovieList(movieList);
 	});
 });
 
@@ -327,6 +439,42 @@ var drawMovieListTable = function(movieData, movieList) {
 			);
 		});
 	}
+}
+
+// Save movie list
+var saveMovieList = function(movieList) {
+	$.ajax({
+		url: "../api/movielists",
+		data: {
+			movieList: movieList
+		},
+		type: "POST",
+		dataType: "json",
+		// Callback function if request is successful
+		success: function(movieListJSON, textStatus, jqXHR) {
+			console.log("Saving movie data: success callback");
+			console.log("movieListJSON:");
+			console.log(movieListJSON);
+		},
+		// Callback function if request is not successful
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log("Saving movie data: error callback");
+			console.log("jqXHR:");
+			console.log(jqXHR);
+			console.log("textStatus:");
+			console.log(textStatus);
+			console.log("errorThrown:");
+			console.log(errorThrown);
+			// Display error message
+			displayMovieListErrorMessage(
+				'Server error encountered when saving list'
+			);
+		},
+		// Callback function whether or not request was successful
+		complete: function(jqXHR, textStatus) {
+			console.log("Saving movie data: complete callback");
+		}
+	});
 }
 
 // Display error message associated with search results
