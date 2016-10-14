@@ -6,7 +6,8 @@ var morgan = require('morgan'); // Logging
 var path = require('path'); // Building file paths
 var bodyParser = require('body-parser'); // Parsing incoming data
 var session = require('express-session'); // Handling cookies
-var MongoStore = require('connect-mongo')(session); // Storing cookies in our database
+// Use memory store until we can figure out how to handle database errors more gracefully
+// var MongoStore = require('connect-mongo')(session); // Storing cookies in our database
 var mongoose = require('mongoose'); // Interfacing with our database
 var passport = require('passport'); // Creating and authenticating users
 var flash = require('connect-flash'); // Passing messages around in a session
@@ -57,8 +58,9 @@ app.set('view engine', 'ejs'); // Set up ejs for templating
 app.use(session({
 	secret: sessionSecret,
 	saveUninitialized: true,
-	resave: true,
-	store: new MongoStore({ mongooseConnection: mongoose.connection })
+	resave: true
+	// Use memory store until we can figure out how to handle database errors more gracefully
+	// store: new MongoStore({ mongooseConnection: mongoose.connection })
 })); // Create sessions and store cookies in MongoDB
 app.use(passport.initialize()); // Initialize passport
 app.use(passport.session()); // Enable passport to write user ID into cookies
@@ -73,4 +75,3 @@ require('./app/routes.js')(app, passport);
 // Launch
 app.listen(expressPort);
 console.log("Server started on port " + expressPort);
-

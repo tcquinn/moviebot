@@ -17,13 +17,11 @@ module.exports = function(passport) {
     passport.deserializeUser(function(id, done) {
         User.findById(id, function(err, user) {
 			if (err) {
-				console.log("Inside callback function of passport.deserializeUser");
-				console.log("Error occurred when attempting User.findbyId");
-				console.log("err:");
-				console.log(err);
-				console.log("user:");
-				console.log(user);
-				console.log("Returning done(err, user)");
+				console.log("Database error inside deserializeUser()");
+				// We return done(null, false) to avoid upstream problems
+				// If we return done(err) or done(null), the upstream code doesn't handle gracefully
+				// Resulting error goes all the way to the user's screen
+				return done(null, false);
 			};
             done(err, user);
         });
@@ -40,20 +38,16 @@ module.exports = function(passport) {
     function(req, email, password, done) {
         // Asynchronous
         // User.findOne wont fire unless data is sent back
-//        process.nextTick(function() {
-			// Find a user whose email is the same as the email submitted by the form
-			// (We are checking to see if the user trying to login already exists)
+        process.nextTick(function() {
+			// Check to see if this email is already in the database
 			User.findOne({ 'local.email' :  email }, function(err, user) {
 				// If there are any errors, return the error
 				if (err) {
-					console.log("Inside callback function of 'local-signup' strategy");
-					console.log("Error occurred when attempting User.findOne");
-					console.log("err:");
-					console.log(err);
-					console.log("user:");
-					console.log(user);
-					console.log("Returning done(err)");
-					return done(err);
+					console.log("Database error inside findOne() part of signup strategy");
+					// We return null in the error argument to avoid upstream problems
+					// If we return err, the upstream code doesn't handle gracefully
+					// The resulting error goes all the way to the user's screen
+					return done(null, false, req.flash('signupMessage', 'Database error.'));
 				}
 				// Check to see if there is already a user with that email
 				if (user) {
@@ -69,18 +63,17 @@ module.exports = function(passport) {
 					// Save the user in the database
 					newUser.save(function(err) {
 						if (err){
-							console.log("Inside callback function of 'local-signup' strategy");
-							console.log("Error occurred when attempting newUser.save");
-							console.log("err:");
-							console.log(err);
-							console.log("Throwing err")
-							throw err;
+							console.log("Database error inside save() part of signup strategy")
+							// We return null in the error argument to avoid upstream problems
+							// If we return err, the upstream code doesn't handle gracefully
+							// The resulting error goes all the way to the user's screen
+							return done(null, false, req.flash('signupMessage', 'Database error.'));
 						}
 						return done(null, newUser);
 					});
 				}
 			});    
-//		});
+		});
     }));
     // Login strategy
     // We are using named strategies since we have one for login and one for signup
@@ -93,19 +86,15 @@ module.exports = function(passport) {
     },
     function(req, email, password, done) {
 		// Callback with email and password from our form
-        // Find a user whose email is the same as the forms email
-        // We are checking to see if the user trying to login exists
+        // Try to retrieve user with this email address and check password
         User.findOne({ 'local.email' :  email }, function(err, user) {
             // If there are any errors, return the error before anything else
             if (err){
-				console.log("Inside callback function of 'local-login' strategy");
-				console.log("Error occurred when attempting User.findOne");
-				console.log("err:");
-				console.log(err);
-				console.log("user:");
-				console.log(user);
-				console.log("Returning done(err)");
-				return done(err);
+				console.log("Database error inside login strategy");
+				// We return null in the error argument to avoid upstream problems
+				// If we return err, the upstream code doesn't handle gracefully
+				// The resulting error goes all the way to the user's screen
+				return done(null, false, req.flash('loginMessage', 'Database error.'));
 			}
             // If no user is found, return an error
             if (!user) {

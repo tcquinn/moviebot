@@ -74,12 +74,8 @@ module.exports = function(app, passport) {
 		// Save the movie list
 		req.user.save(function(err) {
 			if (err) {
-				console.log("Inside callback function of POST /api/movielists");
-				console.log("Error occurred when attempting req.user.save");
-				console.log("err:");
-				console.log(err);
-				console.log("Throwing err")
-				throw err;
+				console.log("Database error inside save API");
+				res.json({message: "Database error"})
 			}
 		});
 		// Return the object we just saved
