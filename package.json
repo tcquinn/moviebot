@@ -1,5 +1,5 @@
 {
-  "name": "youdia",
+  "name": "moviebot",
   "version": "0.0.1",
   "description": "Web app to store lists of media",
   "main": "app.js",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tcquinn/youdia.git"
+    "url": "git+https://github.com/tcquinn/moviebot.git"
   },
   "author": "Theodore Quinn <tcquinn@tcquinn.org>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/tcquinn/youdia/issues"
+    "url": "https://github.com/tcquinn/moviebot/issues"
   },
-  "homepage": "https://github.com/tcquinn/youdia#readme",
+  "homepage": "https://github.com/tcquinn/moviebot#readme",
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.15.2",
