@@ -40,7 +40,7 @@ module.exports = function(passport) {
     function(req, email, password, done) {
         // Asynchronous
         // User.findOne wont fire unless data is sent back
-        process.nextTick(function() {
+//        process.nextTick(function() {
 			// Find a user whose email is the same as the email submitted by the form
 			// (We are checking to see if the user trying to login already exists)
 			User.findOne({ 'local.email' :  email }, function(err, user) {
@@ -80,7 +80,7 @@ module.exports = function(passport) {
 					});
 				}
 			});    
-		});
+//		});
     }));
     // Login strategy
     // We are using named strategies since we have one for login and one for signup
