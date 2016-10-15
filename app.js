@@ -77,7 +77,7 @@ app.use(session({
 app.use(passport.initialize()); // Initialize passport
 app.use(passport.session()); // Enable passport to write user ID into cookies
 app.use(flash()); // Use connect-flash for flash messages stored in session
-app.use('/static', express.static(path.join(__dirname, 'public'))); // Serve static files from 'public'
+app.use('/static', express.static(path.join(__dirname, 'static'))); // Serve static files from '/static'
 
 // Routes
 
