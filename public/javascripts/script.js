@@ -20,11 +20,19 @@ $(document).ready(function() {
 		url: "../api/movielists",
 		dataType: "json",
 		// Callback function if request is successful
-		success: function(movieListJSON, textStatus, jqXHR) {
+		success: function(response, textStatus, jqXHR) {
 			console.log("Initializing movie data: success callback");
-			console.log("movieListJSON:");
-			console.log(movieListJSON);
-			movieList = movieListJSON.movieList || [];
+			console.log("response:");
+			console.log(response);
+			console.log("textStatus:")
+			console.log(textStatus);
+			console.log("responseText:");
+			console.log(jqXHR.responseText);
+			console.log("status:")
+			console.log(jqXHR.status)
+			console.log("statusText:");
+			console.log(jqXHR.statusText)
+			movieList = response.movieList || [];
 			console.log("movieList:");
 			console.log(movieList);
 			for (var i=0; i < movieList.length; i += 1) {
@@ -55,8 +63,12 @@ $(document).ready(function() {
 		// Callback function if request is not successful
 		error: function(jqXHR, textStatus, errorThrown) {
 			console.log("Initializing movie data: error callback");
-			console.log("jqXHR:");
-			console.log(jqXHR);
+			console.log("responseText:");
+			console.log(jqXHR.responseText);
+			console.log("status:")
+			console.log(jqXHR.status)
+			console.log("statusText:");
+			console.log(jqXHR.statusText)
 			console.log("textStatus:");
 			console.log(textStatus);
 			console.log("errorThrown:");
@@ -451,16 +463,28 @@ var saveMovieList = function(movieList) {
 		type: "POST",
 		dataType: "json",
 		// Callback function if request is successful
-		success: function(movieListJSON, textStatus, jqXHR) {
+		success: function(response, textStatus, jqXHR) {
 			console.log("Saving movie data: success callback");
-			console.log("movieListJSON:");
-			console.log(movieListJSON);
+			console.log("response:");
+			console.log(response);
+			console.log("textStatus:");
+			console.log(textStatus);
+			console.log("responseText:");
+			console.log(jqXHR.responseText);
+			console.log("status:")
+			console.log(jqXHR.status)
+			console.log("statusText:");
+			console.log(jqXHR.statusText)
 		},
 		// Callback function if request is not successful
 		error: function(jqXHR, textStatus, errorThrown) {
 			console.log("Saving movie data: error callback");
-			console.log("jqXHR:");
-			console.log(jqXHR);
+			console.log("responseText:");
+			console.log(jqXHR.responseText);
+			console.log("status:")
+			console.log(jqXHR.status)
+			console.log("statusText:");
+			console.log(jqXHR.statusText)
 			console.log("textStatus:");
 			console.log(textStatus);
 			console.log("errorThrown:");

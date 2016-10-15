@@ -39,6 +39,11 @@ module.exports = function(app, passport) {
 	// We use route middleware to verify that the user is logged in
 	// Allow the client to fetch the movie list from the server for this user
     app.get('/api/movielists', isLoggedInApi, function(req, res) {
+		// Check to make sure the movieList is in the session
+		if(!req.user.local.movieList) {
+			res.status(404);
+			res.json({message: "Data not in session"});
+		}
 		// Send the movie list
         res.json({movieList: req.user.local.movieList});
     });
@@ -49,6 +54,7 @@ module.exports = function(app, passport) {
 		req.user.save(function(err) {
 			if (err) {
 				console.log("Database error inside save API");
+				res.status(500);
 				res.json({message: "Database error"})
 			}
 		});
@@ -75,5 +81,6 @@ function isLoggedInApi(req, res, next) {
     // If user is authenticated in the session, carry on 
     if (req.isAuthenticated()) return next();
     // If they aren't, return an error message
+	res.status(403);
     res.json({message: "User not authenticated"});
 }
