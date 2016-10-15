@@ -34,16 +34,14 @@ mongoose.Promise = global.Promise;
 // Construct the MongoDB URI
 var mongodbUri = (
 	"mongodb://" +
-	mongodbUser +
-	":" +
-	mongodbPassword +
-	"@" +
+	(mongodbUser ? (mongodbUser + ":") : "") +
+	(mongodbPassword ? (mongodbPassword + "@") : "") +
 	mongodbUrl +
-	":" +
-	mongodbPort +
-	"/" +
-	mongodbName
+	(mongodbPort ? (":" + mongodbPort) : "") +
+	(mongodbName ? ("/" + mongodbName) : "")
 )
+
+console.log("MongoDB URI: " + mongodbUri);
 
 // Connect to our database
 mongoose.connect(mongodbUri);
