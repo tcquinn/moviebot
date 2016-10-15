@@ -3,19 +3,11 @@
 module.exports = function(app, passport) {
 	// Home page (with login links)
     app.get('/', function(req, res) {
-		console.log("GET /: req.session");
-		console.log(req.session);
-		console.log("GET /: req.user");
-		console.log(req.user);
 		// Render index.ejs and send
         res.render('index.ejs');
     });
     // Login (show the login form)
     app.get('/login', function(req, res) {
-		console.log("GET /login: req.session");
-		console.log(req.session);
-		console.log("GET /login: req.user");
-		console.log(req.user);
         // Render login.ejs, pass in any flash data, and send
         res.render('login.ejs', {message: req.flash('loginMessage')}); 
     });
@@ -27,10 +19,6 @@ module.exports = function(app, passport) {
     }));
     // Signup (show the signup form)
     app.get('/signup', function(req, res) {
-		console.log("GET /signup: req.session");
-		console.log(req.session);
-		console.log("GET /signup: req.user");
-		console.log(req.user);
         // Render signup.ejs, pass in any flash data, and send
         res.render('signup.ejs', {message: req.flash('signupMessage')});
     });
@@ -43,10 +31,6 @@ module.exports = function(app, passport) {
     // Secure page
     // We use route middleware to verify that the user is logged in
     app.get('/list', isLoggedIn, function(req, res) {
-		console.log("GET /list: req.session");
-		console.log(req.session);
-		console.log("GET /list: req.user");
-		console.log(req.user);
         res.render('list.ejs', {
             user : req.user // Get the user out of session and pass to template
         });
@@ -55,21 +39,11 @@ module.exports = function(app, passport) {
 	// We use route middleware to verify that the user is logged in
 	// Allow the client to fetch the movie list from the server for this user
     app.get('/api/movielists', isLoggedInApi, function(req, res) {
-		console.log("GET /api/movielists: req.session");
-		console.log(req.session);
-		console.log("GET api/movielists: req.user");
-		console.log(req.user);
 		// Send the movie list
         res.json({movieList: req.user.local.movieList});
     });
 	// Allow the client to save the movie list to the server for this user
     app.post('/api/movielists', isLoggedInApi, function(req, res) {
-		console.log("POST /api/movielists: req.session");
-		console.log(req.session);
-		console.log("POST api/movielists: req.user");
-		console.log(req.user);
-		console.log("POST api/movielists: req.body")
-		console.log(req.body)
         req.user.local.movieList = req.body.movieList;
 		// Save the movie list
 		req.user.save(function(err) {
@@ -83,10 +57,6 @@ module.exports = function(app, passport) {
     });
     // Logout
     app.get('/logout', function(req, res) {
-		console.log("GET /logout: req.session");
-		console.log(req.session);
-		console.log("GET /logout: req.user");
-		console.log(req.user);
         req.logout();
 		// Send the user back to the home page
         res.redirect('/');

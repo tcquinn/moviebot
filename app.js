@@ -19,6 +19,7 @@ var config = require('./config');
 var settingsGroup = process.env.SETTINGS_GROUP || config.settingsGroup;
 var expressPort = process.env.EXPRESS_PORT || config[settingsGroup].express.port;
 var mongodbURIelements = process.env.MONGODB_URICOMPONENTS || config[settingsGroup].mongodb.URIelements;
+var mongodbConnectOptions = process.env.MONGODB_CONNECTOPTIONS || config[settingsGroup].mongodb.connectOptions;
 var sessionSecret = process.env.SESSION_SECRET || config[settingsGroup].session.secret;
 var morganFormat = process.env.MORGAN_FORMAT || config[settingsGroup].morgan.format;
 
@@ -30,20 +31,34 @@ mongoose.Promise = global.Promise;
 
 // Construct the MongoDB URI
 var mongodbURI = new URI(mongodbURIelements).toString();
-
-// var mongodbUri = (
-	// "mongodb://" +
-	// (mongodbUser ? (mongodbUser + ":") : "") +
-	// (mongodbPassword ? (mongodbPassword + "@") : "") +
-	// mongodbUrl +
-	// (mongodbPort ? (":" + mongodbPort) : "") +
-	// (mongodbName ? ("/" + mongodbName) : "")
-// )
-
 console.log("MongoDB URI: " + mongodbURI);
 
 // Connect to our database
-mongoose.connect(mongodbURI);
+mongoose.connect(mongodbURI, mongodbConnectOptions);
+
+mongoose.connection.on('open', function () {  
+  console.log("Mongoose close event"); 
+});
+
+mongoose.connection.on('close', function () {  
+  console.log("Mongoose close event"); 
+});
+
+mongoose.connection.on('connected', function () {  
+  console.log("Mongoose connected event");
+}); 
+
+
+mongoose.connection.on('disconnected', function () {  
+  console.log("Mongoose disconnected event"); 
+});
+
+mongoose.connection.on('error',function (err) {  
+  console.log("Mongoose error event:");
+  console.log(err)
+}); 
+
+
 
 // Configure passport 
 require('./passport')(passport); // Pass passport obect for configuration
