@@ -29,7 +29,7 @@ module.exports = function(passport) {
     // Signup strategy
     // We are using named strategies since we have one for login and one for signup
     // By default, if there was no name, it would just be called 'local'
-    passport.use('local-signup', new LocalStrategy({
+    passport.use('signup-strategy', new LocalStrategy({
         // By default, local strategy uses username and password, we will override with email
         usernameField : 'email',
         passwordField : 'password',
@@ -40,7 +40,7 @@ module.exports = function(passport) {
         // User.findOne wont fire unless data is sent back
         process.nextTick(function() {
 			// Check to see if this email is already in the database
-			User.findOne({ 'local.email' :  email }, function(err, user) {
+			User.findOne({ 'email' :  email }, function(err, user) {
 				// If there are any errors, return the error
 				if (err) {
 					console.log("Database error inside findOne() part of signup strategy");
@@ -58,8 +58,8 @@ module.exports = function(passport) {
 					// Create the user
 					var newUser = new User();
 					// Set the user's credentials
-					newUser.local.email = email;
-					newUser.local.password = newUser.generateHash(password);
+					newUser.email = email;
+					newUser.password = newUser.generateHash(password);
 					// Save the user in the database
 					newUser.save(function(err) {
 						if (err){
@@ -78,7 +78,7 @@ module.exports = function(passport) {
     // Login strategy
     // We are using named strategies since we have one for login and one for signup
     // By default, if there was no name, it would just be called 'local'
-    passport.use('local-login', new LocalStrategy({
+    passport.use('login-strategy', new LocalStrategy({
         // By default, local strategy uses username and password, we will override with email
         usernameField : 'email',
         passwordField : 'password',
@@ -87,7 +87,7 @@ module.exports = function(passport) {
     function(req, email, password, done) {
 		// Callback with email and password from our form
         // Try to retrieve user with this email address and check password
-        User.findOne({ 'local.email' :  email }, function(err, user) {
+        User.findOne({ 'email' :  email }, function(err, user) {
             // If there are any errors, return the error before anything else
             if (err){
 				console.log("Database error inside login strategy");

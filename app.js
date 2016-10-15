@@ -37,7 +37,7 @@ console.log("MongoDB URI: " + mongodbURI);
 mongoose.connect(mongodbURI, mongodbConnectOptions);
 
 mongoose.connection.on('open', function () {  
-  console.log("Mongoose close event"); 
+  console.log("Mongoose open event"); 
 });
 
 mongoose.connection.on('close', function () {  
