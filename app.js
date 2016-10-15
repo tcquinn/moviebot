@@ -11,17 +11,14 @@ var session = require('express-session'); // Handling cookies
 var mongoose = require('mongoose'); // Interfacing with our database
 var passport = require('passport'); // Creating and authenticating users
 var flash = require('connect-flash'); // Passing messages around in a session
+var URI = require('urijs'); // Creating and manipulating URIs
 
 // Load our configuration variables
 // We can override the values in config.js using environment variables
 var config = require('./config');
 var settingsGroup = process.env.SETTINGS_GROUP || config.settingsGroup;
 var expressPort = process.env.EXPRESS_PORT || config[settingsGroup].express.port;
-var mongodbUrl = process.env.MONGODB_URL || config[settingsGroup].mongodb.url;
-var mongodbPort = process.env.MONGODB_PORT || config[settingsGroup].mongodb.port;
-var mongodbName = process.env.MONGODB_NAME || config[settingsGroup].mongodb.name;
-var mongodbUser = process.env.MONGODB_USER || config[settingsGroup].mongodb.user;
-var mongodbPassword = process.env.MONGODB_PASSWORD || config[settingsGroup].mongodb.password;
+var mongodbURIelements = process.env.MONGODB_URICOMPONENTS || config[settingsGroup].mongodb.URIelements;
 var sessionSecret = process.env.SESSION_SECRET || config[settingsGroup].session.secret;
 var morganFormat = process.env.MORGAN_FORMAT || config[settingsGroup].morgan.format;
 
@@ -32,19 +29,21 @@ var app = express();
 mongoose.Promise = global.Promise;
 
 // Construct the MongoDB URI
-var mongodbUri = (
-	"mongodb://" +
-	(mongodbUser ? (mongodbUser + ":") : "") +
-	(mongodbPassword ? (mongodbPassword + "@") : "") +
-	mongodbUrl +
-	(mongodbPort ? (":" + mongodbPort) : "") +
-	(mongodbName ? ("/" + mongodbName) : "")
-)
+var mongodbURI = new URI(mongodbURIelements).toString();
 
-console.log("MongoDB URI: " + mongodbUri);
+// var mongodbUri = (
+	// "mongodb://" +
+	// (mongodbUser ? (mongodbUser + ":") : "") +
+	// (mongodbPassword ? (mongodbPassword + "@") : "") +
+	// mongodbUrl +
+	// (mongodbPort ? (":" + mongodbPort) : "") +
+	// (mongodbName ? ("/" + mongodbName) : "")
+// )
+
+console.log("MongoDB URI: " + mongodbURI);
 
 // Connect to our database
-mongoose.connect(mongodbUri);
+mongoose.connect(mongodbURI);
 
 // Configure passport 
 require('./passport')(passport); // Pass passport obect for configuration
