@@ -61,7 +61,7 @@ mongoose.connection.on('error',function (err) {
 
 
 // Configure passport 
-require('./passport')(passport); // Pass passport obect for configuration
+require('./passport-setup')(passport); // Pass passport obect for configuration
 
 // Set up our express middleware
 app.use(morgan(morganFormat)); // Set up logging

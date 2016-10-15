@@ -1,4 +1,4 @@
-// passport.js
+// passport-setup.js
 
 // Load the local strategy package
 var LocalStrategy = require('passport-local').Strategy;
