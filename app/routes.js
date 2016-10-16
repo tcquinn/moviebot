@@ -1,5 +1,8 @@
 // app/routes.js
 
+// Load the user model
+var User = require('../app/models/user');
+
 module.exports = function(app, passport) {
 	// Home page
     app.get('/', function(req, res) {
@@ -85,6 +88,7 @@ module.exports = function(app, passport) {
     app.get('/changepassword', isLoggedIn, function(req, res) {
         // Render changepassword.ejs, passing in any flash data, and send
         res.render('changepassword.ejs', {
+            user : req.user, // Get the user out of session and pass to template
 			dangerMessage: req.flash('changepasswordDangerMessage'),
 			warningMessage: req.flash('changepasswordWarningMessage'),
 			infoMessage: req.flash('changepasswordInfoMessage'),
@@ -110,6 +114,32 @@ module.exports = function(app, passport) {
 				}
 			});
 		}
+	});
+    // Delete account page
+    // We use route middleware to verify that the user is logged in
+    app.get('/deleteaccount', isLoggedIn, function(req, res) {
+        // Render deleteaccount.ejs, passing in any flash data, and send
+        res.render('deleteaccount.ejs', {
+            user : req.user, // Get the user out of session and pass to template
+			dangerMessage: req.flash('deleteaccountDangerMessage'),
+			warningMessage: req.flash('deleteaccountWarningMessage'),
+			infoMessage: req.flash('deleteaccountInfoMessage'),
+			successMessage: req.flash('deleteaccountSuccessMessage')			
+		});
+    });
+    // Process the delete account button
+    app.post('/deleteaccount', isLoggedIn, function(req, res, next) {
+		User.findByIdAndRemove(req.user.id, function(err) {
+			if (err) {
+				req.flash('deleteaccountDangerMessage', "Database error");
+				res.redirect('/deleteaccount');
+			}
+			else {
+				req.flash('homeSuccessMessage', "Account successfully deleted");
+				req.logout();
+				res.redirect('/');
+			}
+		});
 	});
     // Logout
     app.get('/logout', function(req, res) {
