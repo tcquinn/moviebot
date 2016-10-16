@@ -1,41 +1,61 @@
 // app/routes.js
 
 module.exports = function(app, passport) {
-	// Home page (with login links)
+	// Home page
     app.get('/', function(req, res) {
-		// Render index.ejs and send
-        res.render('index.ejs');
+		// Render index.ejs, passing in any flash data, and send
+        res.render('index.ejs', {
+			dangerMessage: req.flash('homeDangerMessage'),
+			warningMessage: req.flash('homeWarningMessage'),
+			infoMessage: req.flash('homeInfoMessage'),
+			successMessage: req.flash('homeSuccessMessage')
+		});
     });
-    // Login (show the login form)
+    // Login page
     app.get('/login', function(req, res) {
-        // Render login.ejs, pass in any flash data, and send
-        res.render('login.ejs', {message: req.flash('loginMessage')}); 
+        // Render login.ejs, passing in any flash data, and send
+        res.render('login.ejs', {
+			dangerMessage: req.flash('loginDangerMessage'),
+			warningMessage: req.flash('loginWarningMessage'),
+			infoMessage: req.flash('loginInfoMessage'),
+			successMessage: req.flash('loginSuccessMessage')			
+		}); 
     });
-    // Process the login form
+    // Process the login form using passport
     app.post('/login', passport.authenticate('login-strategy', {
         successRedirect : '/list', // If success, redirect to the secure section
         failureRedirect : '/login', // If failure, redirect back to the signup page
         failureFlash : true // Allow flash messages
     }));
-    // Signup (show the signup form)
+    // Signup page
     app.get('/signup', function(req, res) {
-        // Render signup.ejs, pass in any flash data, and send
-        res.render('signup.ejs', {message: req.flash('signupMessage')});
+        // Render signup.ejs, passing in any flash data, and send
+        res.render('signup.ejs', {
+			dangerMessage: req.flash('signupDangerMessage'),
+			warningMessage: req.flash('signupWarningMessage'),
+			infoMessage: req.flash('signupInfoMessage'),
+			successMessage: req.flash('signupSuccessMessage')			
+		});
     });
-    // Process the signup form
+    // Process the signup form using passport
     app.post('/signup', passport.authenticate('signup-strategy', {
         successRedirect : '/list', // If success, redirect to the secure section
         failureRedirect : '/signup', // If failure, redirect back to the signup page
         failureFlash : true // Allow flash messages
     }));
-    // Secure page
+    // Movie list page
     // We use route middleware to verify that the user is logged in
     app.get('/list', isLoggedIn, function(req, res) {
+        // Render list.ejs, passing in any flash data, and send
         res.render('list.ejs', {
-            user : req.user // Get the user out of session and pass to template
-        });
+            user : req.user, // Get the user out of session and pass to template
+ 			dangerMessage: req.flash('listDangerMessage'),
+			warningMessage: req.flash('listWarningMessage'),
+			infoMessage: req.flash('listInfoMessage'),
+			successMessage: req.flash('listSuccessMessage')
+       });
     });
-	// Secure API to pass movie list between client and server
+	// API to pass movie lists between client and server
 	// We use route middleware to verify that the user is logged in
 	// Allow the client to fetch the movie list from the server for this user
     app.get('/api/movielists', isLoggedInApi, function(req, res) {
@@ -53,7 +73,6 @@ module.exports = function(app, passport) {
 		// Save the movie list
 		req.user.save(function(err) {
 			if (err) {
-				console.log("Database error inside save API");
 				res.status(500);
 				res.json({message: "Database error"})
 			}
@@ -61,6 +80,37 @@ module.exports = function(app, passport) {
 		// Return the object we just saved
         res.json({movieList: req.user.movieList});
     });
+    // Change password page
+    // We use route middleware to verify that the user is logged in
+    app.get('/changepassword', isLoggedIn, function(req, res) {
+        // Render changepassword.ejs, passing in any flash data, and send
+        res.render('changepassword.ejs', {
+			dangerMessage: req.flash('changepasswordDangerMessage'),
+			warningMessage: req.flash('changepasswordWarningMessage'),
+			infoMessage: req.flash('changepasswordInfoMessage'),
+			successMessage: req.flash('changepasswordSuccessMessage')			
+		});
+    });
+    // Process the change password form
+    app.post('/changepassword', isLoggedIn, function(req, res, next) {
+		if (req.body.newPassword !== req.body.confirmNewPassword) {
+			req.flash('changepasswordDangerMessage', "New passwords don't match");
+			res.redirect('/changepassword');
+		}
+		else {
+			req.user.password = req.user.generateHash(req.body.newPassword);
+			req.user.save(function(err) {
+				if (err) {
+					req.flash('changepasswordDangerMessage', "Database error");
+					res.redirect('/changepassword');
+				}
+				else {
+					req.flash('listSuccessMessage', "Password successfully changed");
+					res.redirect('/list');
+				}
+			});
+		}
+	});
     // Logout
     app.get('/logout', function(req, res) {
         req.logout();
@@ -74,6 +124,7 @@ function isLoggedIn(req, res, next) {
     // If user is authenticated in the session, carry on 
     if (req.isAuthenticated()) return next();
     // If they aren't, redirect them to the home page
+	req.flash('homeDangerMessage', "Authentication error");
     res.redirect('/');
 }
 

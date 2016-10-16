@@ -18,5 +18,20 @@
         <a href="/login" class="btn btn-default">Login</a>
         <a href="/signup" class="btn btn-default">Signup</a>
 	</div>
+	<div class="container">
+		<!-- Show any messages -->
+		<% if (dangerMessage.length > 0) { %>
+			<div class="alert alert-danger"><%= dangerMessage %></div>
+		<% } %>
+		<% if (warningMessage.length > 0) { %>
+			<div class="alert alert-warning"><%= warningMessage %></div>
+		<% } %>
+		<% if (infoMessage.length > 0) { %>
+			<div class="alert alert-info"><%= infoMessage %></div>
+		<% } %>
+		<% if (successMessage.length > 0) { %>
+			<div class="alert alert-success"><%= successMessage %></div>
+		<% } %>
+	</div>
 </body>
 </html>

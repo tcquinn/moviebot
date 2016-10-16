@@ -17,6 +17,25 @@
 		<h1>Moviebot</h1>
 		<p>Build a list of movies you want to watch and compare streaming services based on your list</p>
 		<a href="/logout" class="btn btn-default btn-sm">Logout</a>
+		<a href="/changepassword" class="btn btn-default btn-sm">Change password</a>
+	</div>
+	<div class="container">
+		<p class="text-right"><strong>Account: <%= user.email %></strong></p>
+	</div>
+	<div class="container">
+		<!-- Show any messages -->
+		<% if (dangerMessage.length > 0) { %>
+			<div class="alert alert-danger"><%= dangerMessage %></div>
+		<% } %>
+		<% if (warningMessage.length > 0) { %>
+			<div class="alert alert-warning"><%= warningMessage %></div>
+		<% } %>
+		<% if (infoMessage.length > 0) { %>
+			<div class="alert alert-info"><%= infoMessage %></div>
+		<% } %>
+		<% if (successMessage.length > 0) { %>
+			<div class="alert alert-success"><%= successMessage %></div>
+		<% } %>
 	</div>
 	<div class="container">
 		<div class="form-inline">

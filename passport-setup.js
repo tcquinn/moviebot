@@ -27,7 +27,7 @@ module.exports = function(passport) {
         });
     });
     // Signup strategy
-    // We are using named strategies since we have one for login and one for signup
+    // We are using named strategies since we have multiple strategies
     // By default, if there was no name, it would just be called 'local'
     passport.use('signup-strategy', new LocalStrategy(
 		{
@@ -48,11 +48,11 @@ module.exports = function(passport) {
 						// We return null in the error argument to avoid upstream problems
 						// If we return err, the upstream code doesn't handle gracefully
 						// The resulting error goes all the way to the user's screen
-						return done(null, false, req.flash('signupMessage', 'Database error.'));
+						return done(null, false, req.flash('signupDangerMessage', 'Database error'));
 					}
 					// Check to see if there is already a user with that email
 					if (user) {
-						return done(null, false, req.flash('signupMessage', 'That email is already taken.'));
+						return done(null, false, req.flash('signupDangerMessage', 'That email is already taken'));
 					}
 					else {
 						// If there is no user with that email
@@ -68,7 +68,7 @@ module.exports = function(passport) {
 								// We return null in the error argument to avoid upstream problems
 								// If we return err, the upstream code doesn't handle gracefully
 								// The resulting error goes all the way to the user's screen
-								return done(null, false, req.flash('signupMessage', 'Database error.'));
+								return done(null, false, req.flash('signupDangerMessage', 'Database error'));
 							}
 							return done(null, newUser);
 						});
@@ -78,7 +78,7 @@ module.exports = function(passport) {
 		}
 	));
     // Login strategy
-    // We are using named strategies since we have one for login and one for signup
+    // We are using named strategies since we have multiple strategies
     // By default, if there was no name, it would just be called 'local'
     passport.use('login-strategy', new LocalStrategy(
 		{
@@ -97,15 +97,15 @@ module.exports = function(passport) {
 					// We return null in the error argument to avoid upstream problems
 					// If we return err, the upstream code doesn't handle gracefully
 					// The resulting error goes all the way to the user's screen
-					return done(null, false, req.flash('loginMessage', 'Database error.'));
+					return done(null, false, req.flash('loginDangerMessage', 'Database error'));
 				}
 				// If no user is found, return an error
 				if (!user) {
-					return done(null, false, req.flash('loginMessage', 'No user found.'));
+					return done(null, false, req.flash('loginDangerMessage', 'No user found'));
 				}
 				// If the user is found but the password is wrong, return an error
 				if (!user.validPassword(password)) {
-					return done(null, false, req.flash('loginMessage', 'Oops! Wrong password.'));
+					return done(null, false, req.flash('loginDangerMessage', 'Oops! Wrong password'));
 				}
 				// If all is well, return the user
 				return done(null, user);
