@@ -5,9 +5,16 @@ var movies = (function() {
 	// Private variables
 	var movieList = [];
 	var movieData = {};
-	var i = 0;
+	serviceNames = [
+		"subscriptionNetflix",
+		"subscriptionAmazon",
+		"rentalAmazon",
+		"rentaliTunes",
+		"rentalGooglePlay",
+		"rentalVudu"
+	];
 	// Private functions
-	// Format date for display
+	// Format date for display (currently unused)
 	var formatDate = function (date) {
 		// Check if date is already a string (e.g., because it's still a placeholder)
 		if(typeof(date)==="string"){
@@ -37,6 +44,47 @@ var movies = (function() {
 			)
 		}
 	};
+	// Produce HTML for table cell from title/year data
+	var formatTitleYearData = function(titleYearData) {
+		var cellHTML = "<td>";
+		if (titleYearData.updating) {
+			cellHTML += "Updating";
+		}
+		else {
+			if (!titleYearData.updated) {
+				cellHTML += "?";
+			}
+			else {
+				cellHTML += titleYearData.value;
+			}
+		};
+		cellHTML += "</td>";
+		return(cellHTML);
+	};
+	// Produce HTML for table cell from streaming service data
+	var formatServiceData = function(serviceData) {
+		var cellHTML = "<td>";
+		if (serviceData.updating) {
+			cellHTML += "Updating";
+		}
+		else {
+			if (!serviceData.updated) {
+				cellHTML += "?";
+			}
+			else {
+				if (serviceData.available) {
+					if (serviceData.price) {
+						cellHTML += "$" + serviceData.price;
+					}
+					else {
+						cellHTML += "<span class='glyphicon glyphicon-ok'></span>";
+					}
+				}
+			}
+		};
+		cellHTML += "</td>";
+		return(cellHTML);
+	};
 	// Refresh movie list table on page
 	var drawMovieListTable = function() {
 		// Clear movie table on page
@@ -45,43 +93,26 @@ var movies = (function() {
 		if(movieList.length===0){
 			// If yes, display placeholder in table
 			$('#movieListTableBody').append(
-				"<tr><td colspan='13'><em>No movies in list</em></td></tr>"
+				"<tr><td colspan='10'><em>No movies in list</em></td></tr>"
 			);		
 		}
 		// If no, copy data into table
 		else {
 			movieList.forEach(function(movieID) {
-				$('#movieListTableBody').append(
-					"<tr><td>" +
-					movieData[movieID].title +
-					"</td><td>" +
-					movieData[movieID].releaseYear +
-					"</td><td>" +
-					movieData[movieID].netflixStreaming +
-					"</td><td>" +
-					movieData[movieID].amazonStreaming +
-					"</td><td>" +
-					formatDate(movieData[movieID].updatedStreaming) +
-					"</td><td>" +
-					movieData[movieID].amazonRental +
-					"</td><td>" +
-					movieData[movieID].iTunesRental +
-					"</td><td>" +
-					movieData[movieID].googlePlayRental +
-					"</td><td>" +
-					movieData[movieID].vuduRental +
-					"</td><td>" +
-					formatDate(movieData[movieID].updatedRental) +
-					"</td><td>" +
-					"<button type='button' class='btn btn-default updateInfoButton' data-movieid='" +
-					movieID +
-					"'><span class='glyphicon glyphicon-refresh'></span></button>" +
-					"</td><td>" +
-					"<button type='button' class='btn btn-default removeButton' data-movieid='" +
-					movieID +
-					"'><span class='glyphicon  glyphicon-remove'></span></button>" +
-					"</td></tr>"
-				);
+				var rowHTML = "<tr>"
+				rowHTML += formatTitleYearData(movieData[movieID].title);
+				rowHTML += formatTitleYearData(movieData[movieID].releaseYear);
+				serviceNames.forEach(function(serviceName) {
+					rowHTML += formatServiceData(movieData[movieID][serviceName]);
+				});
+				rowHTML += "<td><button type='button' class='btn btn-default updateInfoButton' data-movieid='";
+				rowHTML += movieID;
+				rowHTML += "'><span class='glyphicon glyphicon-refresh'></span></button></td>";
+				rowHTML += "<td><button type='button' class='btn btn-default removeButton' data-movieid='";
+				rowHTML += movieID;
+				rowHTML += "'><span class='glyphicon  glyphicon-remove'></span></button></td>";
+				rowHTML += "</tr>";
+				$('#movieListTableBody').append(rowHTML);
 			});
 		}			
 	};
@@ -105,7 +136,12 @@ var movies = (function() {
 	};
 	// Update movie title and year for a particular movie ID (using CanIStream.It)
 	var updateTitleAndYear = function(movieID) {
-		console.log("Updating title/year for " + movieID);
+		// Check if movie is still in data
+		if(movieID in movieData) {
+			// If yes, set flags to indicate these fields are being updated
+			movieData[movieID].title.updating = true;
+			movieData[movieID].releaseYear.updating = true;
+		};
 		$.ajax({
 			url: "http://www.canistream.it/services/search",
 			data: {
@@ -115,66 +151,48 @@ var movies = (function() {
 			dataType: "jsonp",
 			// Callback function if request is successful
 			success: function(data, textStatus, jqXHR) {
+				var updateDate = new Date();
 				// Clear any previous error message
 				clearMovieListErrorMessage();
 				// Check if movie is still in data
 				if(movieID in movieData) {
 					// If yes, copy query results into movie data
-					movieData[movieID].title = data[0].title || "?";
-					movieData[movieID].releaseYear = data[0].year || "?";
-				}
-				// Refresh movie table on page
-				drawMovieListTable();
+					movieData[movieID].title.value = data[0].title || "NA";
+					movieData[movieID].title.updated = updateDate;
+					movieData[movieID].releaseYear.value = data[0].year || "NA";
+					movieData[movieID].releaseYear.updated = updateDate
+				};
 			},
 			// Callback function if request is not successful
 			error: function(jqXHR, textStatus, errorThrown) {
-				console.log("Error encountered when updating " + movieID);
-				console.log("jqXHR:");
-				console.log(jqXHR);
-				console.log("textStatus:");
-				console.log(textStatus);
-				console.log("errorThrown:");
-				console.log(errorThrown);
 				// Display an error message
 				displayMovieListErrorMessage(
 					'Server error encountered when updating title and release year for "' +
 					movieID +
 					'"'
 				);
+			},
+			// Callback function whether or not request was successful
+			complete: function(jqXHR, textStatus) {
+				// Check if movie is still in data
+				if(movieID in movieData) {
+					// If yes, remove flags to indicate these fields are no longer being updated
+					delete movieData[movieID].title.updating;
+					delete movieData[movieID].releaseYear.updating;
+				}
+				// Refresh movie table on page
+				drawMovieListTable();
 			}
 		});		
 	};
-	// Extract human-readable streaming info from CanIStream.It data
-	var extractStreamingInfo = function(queryResult, serviceName) {
-		// Check if streaming service appears in results
-		if(serviceName in queryResult) {
-			// If yes, display "Y" (plus possibly price info)
-			// Check if there is price info in results
-			if('price' in queryResult[serviceName]) {
-				// If yes, display price info in parentheses
-				// Check if price is non-zero
-				if(queryResult[serviceName]['price'] > 0) {
-					// If yes, format price and include in parentheses
-					return("<span class='glyphicon glyphicon-ok'></span> ($" + queryResult[serviceName]['price'] + ")");
-				}
-				// If no, omit price info
-				else {
-					return("<span class='glyphicon glyphicon-ok'></span>");
-				}
-			}
-			// If no, omit price info
-			else {
-				return("<span class='glyphicon glyphicon-ok'></span>");
-			}
-		}
-		// If no, display a blank
-		else {
-			return("");
-		}
-	};
 	// Update instant streaming info for a particular movie ID (using CanIStream.It)
-	var updateStreaming = function(movieID) {
-		console.log("Updating instant streaming info for " + movieID);
+	var updateSubscription = function(movieID) {
+		// Check if movie is still in data
+		if(movieID in movieData) {
+			// If yes, set flags to indicate these fields are being updated
+			movieData[movieID].subscriptionNetflix.updating = true;
+			movieData[movieID].subscriptionAmazon.updating = true;
+		};
 		$.ajax({
 			url: "http://www.canistream.it/services/query",
 			data: {
@@ -185,28 +203,21 @@ var movies = (function() {
 			// Use JSONP to avoid same origin policy issues
 			dataType: "jsonp",
 			// Callback function if request is successful
-			success: function(streamingResult, textStatus, jqXHR) {
+			success: function(data, textStatus, jqXHR) {
+				var updateDate = new Date();
 				// Clear any previous error message
 				clearMovieListErrorMessage();
 				// Check if movie is still in data
 				if(movieID in movieData){
 					// If yes, copy query results into movie data
-					movieData[movieID].netflixStreaming = extractStreamingInfo(streamingResult, 'netflix_instant');
-					movieData[movieID].amazonStreaming = extractStreamingInfo(streamingResult, 'amazon_prime_instant_video');
-					movieData[movieID].updatedStreaming = new Date();					
+					movieData[movieID].subscriptionNetflix.updated = updateDate;
+					movieData[movieID].subscriptionNetflix.available = ('netflix_instant' in data);
+					movieData[movieID].subscriptionAmazon.updated = updateDate;
+					movieData[movieID].subscriptionAmazon.available = ('amazon_prime_instant_video' in data);
 				}
-				// Refresh movie table on page
-				drawMovieListTable(movieData, movieList);
 			},
 			// Callback function if request is not successful
 			error: function(jqXHR, textStatus, errorThrown) {
-				console.log("Error encountered when updating instant streaming info for " + movieID);
-				console.log("jqXHR:");
-				console.log(jqXHR);
-				console.log("textStatus:");
-				console.log(textStatus);
-				console.log("errorThrown:");
-				console.log(errorThrown);
 				// Display an error message
 				displayMovieListErrorMessage(
 					'Server error encountered when updating instant streaming info for "' +
@@ -214,11 +225,29 @@ var movies = (function() {
 					'"'
 				);
 			},
+			// Callback function whether or not request was successful
+			complete: function(jqXHR, textStatus) {
+				// Check if movie is still in data
+				if(movieID in movieData) {
+					// If yes, remove flags to indicate these fields are no longer being updated
+					delete movieData[movieID].subscriptionNetflix.updating;
+					delete movieData[movieID].subscriptionAmazon.updating;
+				}
+				// Refresh movie table on page
+				drawMovieListTable();
+			}
 		});
 	};
 	// Update streaming rental info for a particular movie ID (using CanIStream.It)
 	var updateRental = function(movieID) {
-		console.log("Updating rental info for " + movieID);
+		// Check if movie is still in data
+		if(movieID in movieData) {
+			// If yes, set flags to indicate these fields are being updated
+			movieData[movieID].rentalAmazon.updating = true;
+			movieData[movieID].rentaliTunes.updating = true;
+			movieData[movieID].rentalGooglePlay.updating = true;
+			movieData[movieID].rentalVudu.updating = true;
+		};
 		$.ajax({
 			url: "http://www.canistream.it/services/query",
 			data: {
@@ -230,35 +259,51 @@ var movies = (function() {
 			dataType: "jsonp",
 			// Callback function if request is successful
 			success: function(data, textStatus, jqXHR) {
+				var updateDate = new Date();
 				// Clear any previous error message
 				clearMovieListErrorMessage();
 				// Check if movie is still in data
 				if(movieID in movieData) {
 					// If yes, copy results into movie data
-					movieData[movieID].amazonRental = extractStreamingInfo(data, 'amazon_video_rental');
-					movieData[movieID].iTunesRental = extractStreamingInfo(data, 'apple_itunes_rental');
-					movieData[movieID].googlePlayRental = extractStreamingInfo(data, 'android_rental');
-					movieData[movieID].vuduRental = extractStreamingInfo(data, 'vudu_rental');
-					movieData[movieID].updatedRental = new Date();					
+					movieData[movieID].rentalAmazon.updated = updateDate;
+					movieData[movieID].rentalAmazon.available = ('amazon_video_rental' in data);
+					if (data.amazon_video_rental && data.amazon_video_rental.price)
+						movieData[movieID].rentalAmazon.price = data.amazon_video_rental.price;
+					movieData[movieID].rentaliTunes.updated = updateDate;
+					movieData[movieID].rentaliTunes.available = ('apple_itunes_rental' in data);
+					if (data.apple_itunes_rental && data.apple_itunes_rental.price)
+						movieData[movieID].rentaliTunes.price = data.apple_itunes_rental.price;
+					movieData[movieID].rentalGooglePlay.updated = updateDate;
+					movieData[movieID].rentalGooglePlay.available = ('android_rental' in data);
+					if (data.android_rental && data.android_rental.price)
+						movieData[movieID].rentalGooglePlay.price = data.android_rental.price;
+					movieData[movieID].rentalVudu.updated = updateDate;
+					movieData[movieID].rentalVudu.available = ('vudu_rental' in data);
+					if (data.vudu_rental && data.vudu_rental.price)
+						movieData[movieID].rentalVudu.price = data.vudu_rental.price;
 				}
-				// Refresh movie table on page
-				drawMovieListTable();
 			},
 			// Callback function if request is not successful
 			error: function(jqXHR, textStatus, errorThrown) {
-				console.log("Error encountered when updating rental info for " + movieID);
-				console.log("jqXHR:");
-				console.log(jqXHR);
-				console.log("textStatus:");
-				console.log(textStatus);
-				console.log("errorThrown:");
-				console.log(errorThrown);
 				// Display an error message
 				displayMovieListErrorMessage(
 					'Server error encountered when updating streaming rental info for "' +
 					movieData[movieID].title +
 					'"'
 				);
+			},
+			// Callback function whether or not request was successful
+			complete: function(jqXHR, textStatus) {
+				// Check if movie is still in data
+				if(movieID in movieData) {
+					// If yes, remove flags to indicate these fields are no longer being updated
+					delete movieData[movieID].rentalAmazon.updating;
+					delete movieData[movieID].rentaliTunes.updating;
+					delete movieData[movieID].rentalGooglePlay.updating;
+					delete movieData[movieID].rentalVudu.updating;
+				}
+				// Refresh movie table on page
+				drawMovieListTable();
 			}
 		});		
 	};
@@ -285,21 +330,18 @@ var movies = (function() {
 		});
 	};
 	var updateMoviePrivate = function(movieID) {
-		console.log("Updating " + movieID);
-		updateTitleAndYear(movieID);
-		updateStreaming(movieID);
+		updateSubscription(movieID);
 		updateRental(movieID);
+		updateTitleAndYear(movieID);
 	};
 	var addMoviesPrivate = function(addMovieList) {
-		// Check if any of these movies are already in movie list
-		// Need to add this
 		addMovieList.forEach(function(movieID) {
 			// Check to see if movie is already in list
 			if(jQuery.inArray(movieID, movieList) > -1) {
 				// If yes, display an error message and move on to the next movie ID
 				displayMovieListErrorMessage(
 					'"' +
-					movieData[movieID].title +
+					movieData[movieID].title.value +
 					'" is already in movie list'
 				);
 			}
@@ -307,16 +349,14 @@ var movies = (function() {
 				// If no, add movie to list and trigger update (which will in turn trigger table refresh)
 				movieList.push(movieID);
 				movieData[movieID] = {
-					title: "?",
-					releaseYear: "?",
-					netflixStreaming: "?",
-					amazonStreaming: "?",
-					updatedStreaming: "Never",
-					amazonRental: "?",
-					iTunesRental: "?",
-					googlePlayRental: "?",
-					vuduRental: "?",
-					updatedRental: "Never"
+					title: {},
+					releaseYear: {},
+					subscriptionNetflix: {},
+					subscriptionAmazon: {},
+					rentalAmazon: {},
+					rentaliTunes: {},
+					rentalGooglePlay: {},
+					rentalVudu: {},
 				};
 				updateMoviePrivate(movieID);
 			}
@@ -335,6 +375,7 @@ var movies = (function() {
 				// Callback function if request is successful
 				success: function(response, textStatus, jqXHR) {
 					addMovieList = response.movieList || [];
+					movieList=[];
 					movieData = {};
 					addMoviesPrivate(addMovieList);
 				},
@@ -429,7 +470,6 @@ var searchResults = (function() {
 			// Clear search results data
 			searchResultsData = {};
 			searchResultsList = [];
-			console.log("Submitting search query for " + searchTerm);
 			// Send search query
 			$.ajax({
 				url: "http://www.canistream.it/services/search",
@@ -464,13 +504,6 @@ var searchResults = (function() {
 				},
 				// Callback function if request is not successful
 				error: function(jqXHR, textStatus, errorThrown) {
-					console.log("Error encountered when searching for " + searchTerm);
-					console.log("jqXHR:");
-					console.log(jqXHR);
-					console.log("textStatus:");
-					console.log(textStatus);
-					console.log("errorThrown:");
-					console.log(errorThrown);
 					// Display error message
 					displaySearchResultsErrorMessage(
 						'Server error encountered when searching for "' +
