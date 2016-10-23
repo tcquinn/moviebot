@@ -76,36 +76,52 @@ var movies = (function() {
 		cellHTML += "</td>";
 		return(cellHTML);
 	};
+	var updateButtonHTML = function(movieID) {
+		var cellHTML = "<td>";
+		cellHTML += "<button type='button' class='btn btn-default updateInfoButton' data-movieid='";
+		cellHTML += movieID;
+		cellHTML += "'><span class='glyphicon glyphicon-refresh'></span></button>";
+		cellHTML += "</td>";
+		return(cellHTML);
+	};
+	var removeButtonHTML = function(movieID) {
+		var cellHTML = "<td>";
+		cellHTML += "<button type='button' class='btn btn-default removeButton' data-movieid='";
+		cellHTML += movieID;
+		cellHTML += "'><span class='glyphicon  glyphicon-remove'></span></button>";
+		cellHTML += "</td>";
+		return(cellHTML);
+	};
+	var movieDataRowHTML = function(movieID) {
+		var rowHTML = "<tr>";
+		if (movieID.length > 0) {
+			fields.forEach(function(field) {
+				rowHTML += movieDataCellHTML(movieData[movieID][field.name]);
+			});
+			rowHTML += updateButtonHTML(movieID);
+			rowHTML += removeButtonHTML(movieID);
+		}
+		else {
+			rowHTML += "<td colspan='";
+			rowHTML += fields.length + numMovieDataButtons;
+			rowHTML +="'><em>No movies in list</em></td>";
+		}
+		rowHTML += "</tr>";		
+		return (rowHTML);
+	};
 	// Refresh movie list table on page
 	var drawMovieListTable = function() {
-		var rowHTML = "";
 		// Clear movie table on page
 		$('#movieListTableBody').empty();
 		// Check if movie data is empty
 		if (movieList.length===0) {
 			// If yes, display placeholder in table
-			rowHTML = "<tr>";
-			rowHTML += "<td colspan='";
-			rowHTML += fields.length + numMovieDataButtons;
-			rowHTML +="'><em>No movies in list</em></td>";
-			rowHTML += "</tr>";
-			$('#movieListTableBody').append(rowHTML);		
+			$('#movieListTableBody').append(movieDataRowHTML(""));		
 		}
-		// If no, copy data into table
 		else {
+			// If no, copy data into table
 			movieList.forEach(function(movieID) {
-				rowHTML = "<tr>";
-				fields.forEach(function(field) {
-					rowHTML += movieDataCellHTML(movieData[movieID][field.name]);
-				});
-				rowHTML += "<td><button type='button' class='btn btn-default updateInfoButton' data-movieid='";
-				rowHTML += movieID;
-				rowHTML += "'><span class='glyphicon glyphicon-refresh'></span></button></td>";
-				rowHTML += "<td><button type='button' class='btn btn-default removeButton' data-movieid='";
-				rowHTML += movieID;
-				rowHTML += "'><span class='glyphicon  glyphicon-remove'></span></button></td>";
-				rowHTML += "</tr>";
-				$('#movieListTableBody').append(rowHTML);
+				$('#movieListTableBody').append(movieDataRowHTML(movieID));
 			});
 		}			
 	};
@@ -402,39 +418,49 @@ var searchResults = (function() {
 	var numSearchResultButtons = 1;
 	// Private functions
 	// Produce HTML for table cell from title/year data
-	var formatTitleYearSearchResult = function(titleYearSearchResult) {
+	var searchResultsCellHTML = function(searchResultDatum) {
 		var cellHTML = "<td>";
-		cellHTML += titleYearSearchResult.value;
+		cellHTML += searchResultDatum.value;
 		cellHTML += "</td>";
 		return(cellHTML);
 	};
+	var addButtonHTML = function(movieID) {
+		var cellHTML = "<td>";
+		cellHTML += "<button type='button' class='btn btn-default addButton' data-movieid='";
+		cellHTML += movieID;
+		cellHTML += "'><span class='glyphicon  glyphicon-plus'></span></button>";
+		cellHTML += "</td>";
+		return(cellHTML);		
+	};
+	var searchResultsRowHTML = function(movieID) {
+		var rowHTML = "<tr>"
+		if (movieID.length > 0) {
+			fields.forEach(function(field) {
+				rowHTML += searchResultsCellHTML(searchResultsData[movieID][field.name]);
+			});
+			rowHTML += addButtonHTML(movieID);
+		}
+		else {
+			rowHTML += "<td colspan='";
+			rowHTML += fields.length + numSearchResultButtons;
+			rowHTML +="'><em>No search results in list</em></td>";			
+		}
+		rowHTML += "</tr>";
+		return(rowHTML);
+	};
 	// Refresh search results table on page
 	var drawSearchResultsTable = function() {
-		var rowHTML = "";
 		// Clear search results table on page
 		$('#searchResultsTableBody').empty();
 		// Check if search results data is empty
 		if(searchResultsList.length===0) {
 			// If yes, display placeholder in table
-			rowHTML = "<tr>";
-			rowHTML += "<td colspan='";
-			rowHTML += fields.length + numSearchResultButtons;
-			rowHTML +="'><em>No search results in list</em></td>";
-			rowHTML += "</tr>";
-			$('#searchResultsTableBody').append(rowHTML);		
+			$('#searchResultsTableBody').append(searchResultsRowHTML(""));		
 		}
 		// If no, copy data into table
 		else {
 			searchResultsList.forEach(function(movieID) {
-				rowHTML = "<tr>";
-				fields.forEach(function(field) {
-					rowHTML += formatTitleYearSearchResult(searchResultsData[movieID][field.name]);
-				});
-				rowHTML += "<td><button type='button' class='btn btn-default addButton' data-movieid='";
-				rowHTML += movieID;
-				rowHTML += "'><span class='glyphicon  glyphicon-plus'></span></button></td>";
-				rowHTML += "</tr>";
-				$('#searchResultsTableBody').append(rowHTML);
+				$('#searchResultsTableBody').append(searchResultsRowHTML(movieID));
 			});
 		}
 	}
