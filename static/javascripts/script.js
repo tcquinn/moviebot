@@ -53,7 +53,7 @@ var movies = (function() {
 			)
 		}
 	};
-	// Produce HTML for table cell from title/year data
+	// Produce HTML for movie data table cell from movie datum
 	var movieDataCellHTML = function(movieDatum) {
 		var cellHTML = "<td>";
 		if (movieDatum.updating) {
@@ -76,14 +76,16 @@ var movies = (function() {
 		cellHTML += "</td>";
 		return(cellHTML);
 	};
+	// Produce HTML for update button
 	var updateButtonHTML = function(movieID) {
 		var cellHTML = "<td>";
-		cellHTML += "<button type='button' class='btn btn-default updateInfoButton' data-movieid='";
+		cellHTML += "<button type='button' class='btn btn-default updateButton' data-movieid='";
 		cellHTML += movieID;
 		cellHTML += "'><span class='glyphicon glyphicon-refresh'></span></button>";
 		cellHTML += "</td>";
 		return(cellHTML);
 	};
+	// Produce HTML for remove button
 	var removeButtonHTML = function(movieID) {
 		var cellHTML = "<td>";
 		cellHTML += "<button type='button' class='btn btn-default removeButton' data-movieid='";
@@ -92,6 +94,7 @@ var movies = (function() {
 		cellHTML += "</td>";
 		return(cellHTML);
 	};
+	// Produce HTML for movie data table row from movie ID
 	var movieDataRowHTML = function(movieID) {
 		var rowHTML = "<tr>";
 		if (movieID.length > 0) {
@@ -109,39 +112,39 @@ var movies = (function() {
 		rowHTML += "</tr>";		
 		return (rowHTML);
 	};
-	// Refresh movie list table on page
-	var drawMovieListTable = function() {
-		// Clear movie table on page
-		$('#movieListTableBody').empty();
-		// Check if movie data is empty
+	// Refresh movie data table on page
+	var refreshMovieDataTable = function() {
+		// Clear movie data table on page
+		$('#movieDataTableBody').empty();
+		// Check if movie list is empty
 		if (movieList.length===0) {
 			// If yes, display placeholder in table
-			$('#movieListTableBody').append(movieDataRowHTML(""));		
+			$('#movieDataTableBody').append(movieDataRowHTML(""));		
 		}
 		else {
 			// If no, copy data into table
 			movieList.forEach(function(movieID) {
-				$('#movieListTableBody').append(movieDataRowHTML(movieID));
+				$('#movieDataTableBody').append(movieDataRowHTML(movieID));
 			});
 		}			
 	};
-	// Display error message associated with movie list
-	var displayMovieListErrorMessage = function(errorMessage) {
+	// Display error message associated with movie data
+	var displayMovieDataErrorMessage = function(errorMessage) {
 		// Write error message to page
-		$('#movieListErrorBox').html(
-			'<div class="alert alert-warning" id="searchResultsErrorBox" display="none">' +
+		$('#movieDataErrorBox').html(
+			'<div class="alert alert-warning" id="searchResultsDataErrorBox" display="none">' +
 			'<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>' + 
 			errorMessage +
 			'</div>');
 		// Unhide error message section of page
-		$('#movieListErrorBox').css("display","block")
+		$('#movieDataErrorBox').css("display","block")
 	};
 	// Clear error message associated with movie list
-	var clearMovieListErrorMessage = function() {
+	var clearMovieDataErrorMessage = function() {
 		// Erase error messages from the page
-		$('#movieListErrorBox').empty();
+		$('#movieDataErrorBox').empty();
 		// Hide error message section of page
-		$('#movieListErrorBox').css("display","none")
+		$('#movieDataErrorBox').css("display","none")
 	};
 	// Update movie title and year for a particular movie ID (using CanIStream.It)
 	var updateTitleAndYear = function(movieID) {
@@ -163,7 +166,7 @@ var movies = (function() {
 			success: function(data, textStatus, jqXHR) {
 				var updateDate = new Date();
 				// Clear any previous error message
-				clearMovieListErrorMessage();
+				clearMovieDataErrorMessage();
 				// Check if movie is still in data
 				if(movieID in movieData) {
 					// If yes, copy query results into movie data
@@ -176,7 +179,7 @@ var movies = (function() {
 			// Callback function if request is not successful
 			error: function(jqXHR, textStatus, errorThrown) {
 				// Display an error message
-				displayMovieListErrorMessage(
+				displayMovieDataErrorMessage(
 					'Server error encountered when updating title and release year for "' +
 					movieID +
 					'"'
@@ -191,12 +194,12 @@ var movies = (function() {
 						delete movieData[movieID][titleYearField.name].updating;
 					});
 				}
-				// Refresh movie table on page
-				drawMovieListTable();
+				// Refresh movie data table on page
+				refreshMovieDataTable();
 			}
 		});		
 	};
-	// Update instant streaming info for a particular movie ID (using CanIStream.It)
+	// Update subscription info for a particular movie ID (using CanIStream.It)
 	var updateSubscription = function(movieID) {
 		// Check if movie is still in data
 		if(movieID in movieData) {
@@ -218,7 +221,7 @@ var movies = (function() {
 			success: function(data, textStatus, jqXHR) {
 				var updateDate = new Date();
 				// Clear any previous error message
-				clearMovieListErrorMessage();
+				clearMovieDataErrorMessage();
 				// Check if movie is still in data
 				if(movieID in movieData){
 					// If yes, copy query results into movie data
@@ -232,7 +235,7 @@ var movies = (function() {
 			// Callback function if request is not successful
 			error: function(jqXHR, textStatus, errorThrown) {
 				// Display an error message
-				displayMovieListErrorMessage(
+				displayMovieDataErrorMessage(
 					'Server error encountered when updating instant streaming info for "' +
 					movieData[movieID].title +
 					'"'
@@ -247,12 +250,12 @@ var movies = (function() {
 						delete movieData[movieID][subscriptionServiceField.name].updating;
 					});
 				}
-				// Refresh movie table on page
-				drawMovieListTable();
+				// Refresh movie data table on page
+				refreshMovieDataTable();
 			}
 		});
 	};
-	// Update streaming rental info for a particular movie ID (using CanIStream.It)
+	// Update rental info for a particular movie ID (using CanIStream.It)
 	var updateRental = function(movieID) {
 		// Check if movie is still in data
 		if(movieID in movieData) {
@@ -274,7 +277,7 @@ var movies = (function() {
 			success: function(data, textStatus, jqXHR) {
 				var updateDate = new Date();
 				// Clear any previous error message
-				clearMovieListErrorMessage();
+				clearMovieDataErrorMessage();
 				// Check if movie is still in data
 				if(movieID in movieData) {
 					// If yes, copy results into movie data
@@ -291,7 +294,7 @@ var movies = (function() {
 			// Callback function if request is not successful
 			error: function(jqXHR, textStatus, errorThrown) {
 				// Display an error message
-				displayMovieListErrorMessage(
+				displayMovieDataErrorMessage(
 					'Server error encountered when updating streaming rental info for "' +
 					movieData[movieID].title +
 					'"'
@@ -302,13 +305,12 @@ var movies = (function() {
 				// Check if movie is still in data
 				if(movieID in movieData) {
 					// If yes, remove flags to indicate these fields are no longer being updated
-					// If yes, set flags to indicate these fields are being updated
 					rentalServiceFields.forEach(function(rentalServiceField) {
 						delete movieData[movieID][rentalServiceField.name].updating;
 					});
 				}
-				// Refresh movie table on page
-				drawMovieListTable();
+				// Refresh movie data table on page
+				refreshMovieDataTable();
 			}
 		});		
 	};
@@ -322,13 +324,13 @@ var movies = (function() {
 			type: "POST",
 			dataType: "json",
 			// Callback function if request is successful
-			success: function(response, textStatus, jqXHR) {
+			success: function(data, textStatus, jqXHR) {
 				console.log("Saving movie data: success");
 			},
 			// Callback function if request is not successful
 			error: function(jqXHR, textStatus, errorThrown) {
 				// Display error message
-				displayMovieListErrorMessage(
+				displayMovieDataErrorMessage(
 					'Server error encountered when saving list'
 				);
 			},
@@ -344,7 +346,7 @@ var movies = (function() {
 			// Check to see if movie is already in list
 			if(jQuery.inArray(movieID, movieList) > -1) {
 				// If yes, display an error message and move on to the next movie ID
-				displayMovieListErrorMessage(
+				displayMovieDataErrorMessage(
 					'"' +
 					movieData[movieID].title.value +
 					'" is already in movie list'
@@ -381,7 +383,7 @@ var movies = (function() {
 				// Callback function if request is not successful
 				error: function(jqXHR, textStatus, errorThrown) {
 					// Display error message
-					displayMovieListErrorMessage(
+					displayMovieDataErrorMessage(
 						'Server error encountered when initializing list'
 					);
 				},
@@ -398,7 +400,7 @@ var movies = (function() {
 				movieList.splice(i,1);
 			}
 			// Refresh movie table on page
-			drawMovieListTable();
+			refreshMovieDataTable();
 			// Save movie list
 			saveMovieList();			
 		},
@@ -415,12 +417,12 @@ var searchResults = (function() {
 		{name: "title", CISIname: "title"},
 		{name: "releaseYear", CISIname: "year"}
 	];
-	var numSearchResultButtons = 1;
+	var numSearchResultsButtons = 1;
 	// Private functions
 	// Produce HTML for table cell from title/year data
-	var searchResultsCellHTML = function(searchResultDatum) {
+	var searchResultsCellHTML = function(searchResultsDatum) {
 		var cellHTML = "<td>";
-		cellHTML += searchResultDatum.value;
+		cellHTML += searchResultsDatum.value;
 		cellHTML += "</td>";
 		return(cellHTML);
 	};
@@ -442,52 +444,52 @@ var searchResults = (function() {
 		}
 		else {
 			rowHTML += "<td colspan='";
-			rowHTML += fields.length + numSearchResultButtons;
+			rowHTML += fields.length + numSearchResultsButtons;
 			rowHTML +="'><em>No search results in list</em></td>";			
 		}
 		rowHTML += "</tr>";
 		return(rowHTML);
 	};
-	// Refresh search results table on page
-	var drawSearchResultsTable = function() {
-		// Clear search results table on page
-		$('#searchResultsTableBody').empty();
-		// Check if search results data is empty
+	// Refresh search results data table on page
+	var refreshSearchResultsDataTable = function() {
+		// Clear search results data table on page
+		$('#searchResultsDataTableBody').empty();
+		// Check if search results list is empty
 		if(searchResultsList.length===0) {
 			// If yes, display placeholder in table
-			$('#searchResultsTableBody').append(searchResultsRowHTML(""));		
+			$('#searchResultsDataTableBody').append(searchResultsRowHTML(""));		
 		}
 		// If no, copy data into table
 		else {
 			searchResultsList.forEach(function(movieID) {
-				$('#searchResultsTableBody').append(searchResultsRowHTML(movieID));
+				$('#searchResultsDataTableBody').append(searchResultsRowHTML(movieID));
 			});
 		}
 	}
-	// Display error message associated with search results
-	var displaySearchResultsErrorMessage = function(errorMessage) {
+	// Display error message associated with search results data
+	var displaySearchResultsDataErrorMessage = function(errorMessage) {
 		// Write error message to page
-		$('#searchResultsErrorBox').html(
-			'<div class="alert alert-warning" id="searchResultsErrorBox" display="none">' +
+		$('#searchResultsDataErrorBox').html(
+			'<div class="alert alert-warning" id="searchResultsDataErrorBox" display="none">' +
 			'<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>' + 
 			errorMessage +
 			'</div>');
 		// Unhide error message section of page
-		$('#searchResultsErrorBox').css("display","block")
+		$('#searchResultsDataErrorBox').css("display","block")
 	}
-	// Clear error message associated with search results
-	var clearSearchResultsErrorMessage = function() {
+	// Clear error message associated with search results data
+	var clearSearchResultsDataErrorMessage = function() {
 		// Erase error message from page
-		$('#searchResultsErrorBox').empty();
+		$('#searchResultsDataErrorBox').empty();
 		// Hide error message section of page
-		$('#searchResultsErrorBox').css("display","none")
+		$('#searchResultsDataErrorBox').css("display","none")
 	}
 	// Public functions
 	return {
 		initializeSearchResults: function() {
 			searchResultsData = {};
 			searchResultsList = [];
-			drawSearchResultsTable();
+			refreshSearchResultsDataTable();
 		},
 		getSearchResults: function(searchTerm) {
 			// Clear search results data
@@ -502,12 +504,12 @@ var searchResults = (function() {
 				// Use JSONP to avoid same origin policy issues
 				dataType: "jsonp",
 				// Callback function if request is successful
-				success: function(searchResults, textStatus, jqXHR) {
+				success: function(data, textStatus, jqXHR) {
 					// Check if any search results were returned
-					if(searchResults.length > 0) {
+					if(data.length > 0) {
 						// Is yes, clear error messages and copy search results into search results data object
-						clearSearchResultsErrorMessage();
-						searchResults.forEach(function(searchResult){
+						clearSearchResultsDataErrorMessage();
+						data.forEach(function(searchResult){
 							var movieID = searchResult._id;
 							searchResultsData[movieID] = {};
 							fields.forEach(function(field) {
@@ -520,7 +522,7 @@ var searchResults = (function() {
 					}
 					else {
 						// If no, display error message
-						displaySearchResultsErrorMessage(
+						displaySearchResultsDataErrorMessage(
 							'No search results for "' +
 							searchTerm +
 							'"'
@@ -530,7 +532,7 @@ var searchResults = (function() {
 				// Callback function if request is not successful
 				error: function(jqXHR, textStatus, errorThrown) {
 					// Display error message
-					displaySearchResultsErrorMessage(
+					displaySearchResultsDataErrorMessage(
 						'Server error encountered when searching for "' +
 						searchTerm +
 						'"'
@@ -538,8 +540,8 @@ var searchResults = (function() {
 				},
 				// Callback function whether or not request was successful
 				complete: function(jqXHR, textStatus) {
-					// Refresh search results table on page
-					drawSearchResultsTable();
+					// Refresh search results data table on page
+					refreshSearchResultsDataTable();
 					// Clear search box
 					$('#searchBox').val('');
 					// Re-enable the search button and search box
@@ -559,7 +561,7 @@ var searchResults = (function() {
 				searchResultsList.splice(i,1);
 			}
 			// Refresh search results table on page
-			drawSearchResultsTable();
+			refreshSearchResultsDataTable();
 		}
 	}
 })();
@@ -595,7 +597,7 @@ $(document).ready(function() {
 		movies.addMovies([movieID]);
 	});
 	// Event handler if user clicks on Update button next to a movie
-	$(document).on('click','button.updateInfoButton', function() {
+	$(document).on('click','button.updateButton', function() {
 		// Extract movie ID from button data
 		var movieID = $(this).data().movieid;
 		movies.updateMovie(movieID);
