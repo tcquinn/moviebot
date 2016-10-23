@@ -57,7 +57,7 @@ var movies = (function() {
 	var movieDataCellHTML = function(movieDatum) {
 		var cellHTML = "<td>";
 		if (movieDatum.updating) {
-			cellHTML += "Updating";
+			cellHTML += "<i class='fa fa-refresh fa-spin'></i>";
 		}
 		else if (!movieDatum.updated){
 			cellHTML += "?";
