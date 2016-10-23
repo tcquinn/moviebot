@@ -469,7 +469,12 @@ var searchResults = (function() {
 			searchResultsList = [];
 			refreshSearchResultsDataTable();
 		},
-		getSearchResults: function(searchTerm) {
+		getSearchResults: function() {
+			// Read user's input from search box
+			var searchTerm = $('#searchBox').val();
+			// Disable search button and search box
+			$('#searchButton').addClass("disabled");
+			$('#searchBox').prop('disabled', true);
 			// Clear search results data
 			searchResultsData = {};
 			searchResultsList = [];
@@ -550,12 +555,7 @@ $(document).ready(function() {
 	movies.initializeMovies();
 	// Event handler if user clicks on Search buttton
 	$('button.searchButton').click(function() {
-		// Disable search button and search box
-		$('#searchButton').addClass("disabled");
-		$('#searchBox').prop('disabled', true);
-		// Read user's input from search box
-		var searchTerm = $('#searchBox').val();
-		searchResults.getSearchResults(searchTerm);
+		searchResults.getSearchResults();
 	});
 	// Event handler if user presses Enter key in Search box
 	$('#searchBox').keyup(function(event) {
