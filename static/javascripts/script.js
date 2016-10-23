@@ -5,14 +5,23 @@ var movies = (function() {
 	// Private variables
 	var movieList = [];
 	var movieData = {};
-	serviceNames = [
-		"subscriptionNetflix",
-		"subscriptionAmazon",
-		"rentalAmazon",
-		"rentaliTunes",
-		"rentalGooglePlay",
-		"rentalVudu"
+	var titleYearFields = [
+		{name: "title", CISIname: "title"},
+		{name: "releaseYear", CISIname: "year"}
 	];
+	var subscriptionServiceFields = [
+		{name: "subscriptionNetflix", CISIname: "netflix_instant"},
+		{name: "subscriptionAmazon", CISIname: "amazon_prime_instant_video"}
+	];
+	var rentalServiceFields = [
+		{name: "rentalAmazon", CISIname: "amazon_video_rental"},
+		{name: "rentaliTunes", CISIname: "apple_itunes_rental"},
+		{name: "rentalGooglePlay", CISIname: "android_rental"},
+		{name: "rentalVudu", CISIname: "vudu_rental"}
+	];
+	var serviceFields = subscriptionServiceFields.concat(rentalServiceFields);
+	var fields = titleYearFields.concat(serviceFields);
+	var numMovieDataButtons = 2;
 	// Private functions
 	// Format date for display (currently unused)
 	var formatDate = function (date) {
@@ -87,23 +96,28 @@ var movies = (function() {
 	};
 	// Refresh movie list table on page
 	var drawMovieListTable = function() {
+		var rowHTML = "";
 		// Clear movie table on page
 		$('#movieListTableBody').empty();
 		// Check if movie data is empty
-		if(movieList.length===0){
+		if (movieList.length===0) {
 			// If yes, display placeholder in table
-			$('#movieListTableBody').append(
-				"<tr><td colspan='10'><em>No movies in list</em></td></tr>"
-			);		
+			rowHTML = "<tr>";
+			rowHTML += "<td colspan='";
+			rowHTML += fields.length + numMovieDataButtons;
+			rowHTML +="'><em>No movies in list</em></td>";
+			rowHTML += "</tr>";
+			$('#movieListTableBody').append(rowHTML);		
 		}
 		// If no, copy data into table
 		else {
 			movieList.forEach(function(movieID) {
-				var rowHTML = "<tr>"
-				rowHTML += formatTitleYearData(movieData[movieID].title);
-				rowHTML += formatTitleYearData(movieData[movieID].releaseYear);
-				serviceNames.forEach(function(serviceName) {
-					rowHTML += formatServiceData(movieData[movieID][serviceName]);
+				rowHTML = "<tr>";
+				titleYearFields.forEach(function(titleYearField) {
+					rowHTML += formatTitleYearData(movieData[movieID][titleYearField.name]);
+				});
+				serviceFields.forEach(function(serviceField) {
+					rowHTML += formatServiceData(movieData[movieID][serviceField.name]);
 				});
 				rowHTML += "<td><button type='button' class='btn btn-default updateInfoButton' data-movieid='";
 				rowHTML += movieID;
@@ -139,8 +153,9 @@ var movies = (function() {
 		// Check if movie is still in data
 		if(movieID in movieData) {
 			// If yes, set flags to indicate these fields are being updated
-			movieData[movieID].title.updating = true;
-			movieData[movieID].releaseYear.updating = true;
+			titleYearFields.forEach(function(titleYearField) {
+				movieData[movieID][titleYearField.name].updating = true;
+			});
 		};
 		$.ajax({
 			url: "http://www.canistream.it/services/search",
@@ -157,10 +172,10 @@ var movies = (function() {
 				// Check if movie is still in data
 				if(movieID in movieData) {
 					// If yes, copy query results into movie data
-					movieData[movieID].title.value = data[0].title || "NA";
-					movieData[movieID].title.updated = updateDate;
-					movieData[movieID].releaseYear.value = data[0].year || "NA";
-					movieData[movieID].releaseYear.updated = updateDate
+					titleYearFields.forEach(function(titleYearField) {
+						movieData[movieID][titleYearField.name].value = data[0][titleYearField.CISIname] || "NA";
+						movieData[movieID][titleYearField.name].updated = updateDate;
+					});
 				};
 			},
 			// Callback function if request is not successful
@@ -177,8 +192,9 @@ var movies = (function() {
 				// Check if movie is still in data
 				if(movieID in movieData) {
 					// If yes, remove flags to indicate these fields are no longer being updated
-					delete movieData[movieID].title.updating;
-					delete movieData[movieID].releaseYear.updating;
+					titleYearFields.forEach(function(titleYearField) {
+						delete movieData[movieID][titleYearField.name].updating;
+					});
 				}
 				// Refresh movie table on page
 				drawMovieListTable();
@@ -190,8 +206,9 @@ var movies = (function() {
 		// Check if movie is still in data
 		if(movieID in movieData) {
 			// If yes, set flags to indicate these fields are being updated
-			movieData[movieID].subscriptionNetflix.updating = true;
-			movieData[movieID].subscriptionAmazon.updating = true;
+			subscriptionServiceFields.forEach(function(subscriptionServiceField) {
+				movieData[movieID][subscriptionServiceField.name].updating = true;
+			});
 		};
 		$.ajax({
 			url: "http://www.canistream.it/services/query",
@@ -210,10 +227,11 @@ var movies = (function() {
 				// Check if movie is still in data
 				if(movieID in movieData){
 					// If yes, copy query results into movie data
-					movieData[movieID].subscriptionNetflix.updated = updateDate;
-					movieData[movieID].subscriptionNetflix.available = ('netflix_instant' in data);
-					movieData[movieID].subscriptionAmazon.updated = updateDate;
-					movieData[movieID].subscriptionAmazon.available = ('amazon_prime_instant_video' in data);
+					subscriptionServiceFields.forEach(function(subscriptionServiceField) {
+						movieData[movieID][subscriptionServiceField.name].updated = updateDate;
+						movieData[movieID][subscriptionServiceField.name].available =
+							(subscriptionServiceField.CISIname in data);						
+					});
 				}
 			},
 			// Callback function if request is not successful
@@ -230,8 +248,9 @@ var movies = (function() {
 				// Check if movie is still in data
 				if(movieID in movieData) {
 					// If yes, remove flags to indicate these fields are no longer being updated
-					delete movieData[movieID].subscriptionNetflix.updating;
-					delete movieData[movieID].subscriptionAmazon.updating;
+					subscriptionServiceFields.forEach(function(subscriptionServiceField) {
+						delete movieData[movieID][subscriptionServiceField.name].updating;
+					});
 				}
 				// Refresh movie table on page
 				drawMovieListTable();
@@ -243,10 +262,9 @@ var movies = (function() {
 		// Check if movie is still in data
 		if(movieID in movieData) {
 			// If yes, set flags to indicate these fields are being updated
-			movieData[movieID].rentalAmazon.updating = true;
-			movieData[movieID].rentaliTunes.updating = true;
-			movieData[movieID].rentalGooglePlay.updating = true;
-			movieData[movieID].rentalVudu.updating = true;
+			rentalServiceFields.forEach(function(rentalServiceField) {
+				movieData[movieID][rentalServiceField.name].updating = true;
+			});
 		};
 		$.ajax({
 			url: "http://www.canistream.it/services/query",
@@ -265,22 +283,14 @@ var movies = (function() {
 				// Check if movie is still in data
 				if(movieID in movieData) {
 					// If yes, copy results into movie data
-					movieData[movieID].rentalAmazon.updated = updateDate;
-					movieData[movieID].rentalAmazon.available = ('amazon_video_rental' in data);
-					if (data.amazon_video_rental && data.amazon_video_rental.price)
-						movieData[movieID].rentalAmazon.price = data.amazon_video_rental.price;
-					movieData[movieID].rentaliTunes.updated = updateDate;
-					movieData[movieID].rentaliTunes.available = ('apple_itunes_rental' in data);
-					if (data.apple_itunes_rental && data.apple_itunes_rental.price)
-						movieData[movieID].rentaliTunes.price = data.apple_itunes_rental.price;
-					movieData[movieID].rentalGooglePlay.updated = updateDate;
-					movieData[movieID].rentalGooglePlay.available = ('android_rental' in data);
-					if (data.android_rental && data.android_rental.price)
-						movieData[movieID].rentalGooglePlay.price = data.android_rental.price;
-					movieData[movieID].rentalVudu.updated = updateDate;
-					movieData[movieID].rentalVudu.available = ('vudu_rental' in data);
-					if (data.vudu_rental && data.vudu_rental.price)
-						movieData[movieID].rentalVudu.price = data.vudu_rental.price;
+					rentalServiceFields.forEach(function(rentalServiceField) {
+						movieData[movieID][rentalServiceField.name].updated = updateDate;
+						movieData[movieID][rentalServiceField.name].available =
+							(rentalServiceField.CISIname in data);						
+						if (data[rentalServiceField.CISIname] && data[rentalServiceField.CISIname].price)
+							movieData[movieID][rentalServiceField.name].price =
+								data[rentalServiceField.CISIname].price;
+					});
 				}
 			},
 			// Callback function if request is not successful
@@ -297,10 +307,10 @@ var movies = (function() {
 				// Check if movie is still in data
 				if(movieID in movieData) {
 					// If yes, remove flags to indicate these fields are no longer being updated
-					delete movieData[movieID].rentalAmazon.updating;
-					delete movieData[movieID].rentaliTunes.updating;
-					delete movieData[movieID].rentalGooglePlay.updating;
-					delete movieData[movieID].rentalVudu.updating;
+					// If yes, set flags to indicate these fields are being updated
+					rentalServiceFields.forEach(function(rentalServiceField) {
+						delete movieData[movieID][rentalServiceField.name].updating;
+					});
 				}
 				// Refresh movie table on page
 				drawMovieListTable();
@@ -348,16 +358,10 @@ var movies = (function() {
 			else {
 				// If no, add movie to list and trigger update (which will in turn trigger table refresh)
 				movieList.push(movieID);
-				movieData[movieID] = {
-					title: {},
-					releaseYear: {},
-					subscriptionNetflix: {},
-					subscriptionAmazon: {},
-					rentalAmazon: {},
-					rentaliTunes: {},
-					rentalGooglePlay: {},
-					rentalVudu: {},
-				};
+				movieData[movieID] = {};
+				fields.forEach(function(field) {
+					movieData[movieID][field.name] = {};
+				});
 				updateMoviePrivate(movieID);
 			}
 		});
@@ -389,6 +393,7 @@ var movies = (function() {
 			});
 		},
 		removeMovie: function(movieID) {
+			var i=0;
 			// Remove movie from movie data
 			delete movieData[movieID];
 			// Remove every occurence of movieID from movieList
@@ -411,33 +416,48 @@ var searchResults = (function() {
 	// Private variables
 	var searchResultsData = {};
 	var searchResultsList = [];
-	var i = 0;
+	var fields = [
+		{name: "title", CISIname: "title"},
+		{name: "releaseYear", CISIname: "year"}
+	];
+	var numSearchResultButtons = 1;
 	// Private functions
+	// Produce HTML for table cell from title/year data
+	var formatTitleYearSearchResult = function(titleYearSearchResult) {
+		var cellHTML = "<td>";
+		cellHTML += titleYearSearchResult.value;
+		cellHTML += "</td>";
+		return(cellHTML);
+	};
 	// Refresh search results table on page
 	var drawSearchResultsTable = function() {
+		var rowHTML = "";
 		// Clear search results table on page
 		$('#searchResultsTableBody').empty();
 		// Check if search results data is empty
 		if(searchResultsList.length===0) {
+			console.log("Generating empty search result list placeholder");
 			// If yes, display placeholder in table
-			$('#searchResultsTableBody').append(
-				"<tr><td colspan='3'><em>No search results</em></td></tr>"
-			);
+			rowHTML = "<tr>";
+			rowHTML += "<td colspan='";
+			rowHTML += fields.length + numSearchResultButtons;
+			rowHTML +="'><em>No search results in list</em></td>";
+			rowHTML += "</tr>";
+			console.log(rowHTML);
+			$('#searchResultsTableBody').append(rowHTML);		
 		}
 		// If no, copy data into table
 		else {
 			searchResultsList.forEach(function(movieID) {
-				$('#searchResultsTableBody').append(
-					"<tr><td>" +
-					searchResultsData[movieID].title +
-					"</td><td>" +
-					searchResultsData[movieID].releaseYear +
-					"</td><td>" +
-					"<button type='button' class='btn btn-default addButton' data-movieid='"+
-					movieID +
-					"'><span class='glyphicon  glyphicon-plus'></span></button>" +
-					"</td></tr>"
-				);
+				rowHTML = "<tr>";
+				fields.forEach(function(field) {
+					rowHTML += formatTitleYearSearchResult(searchResultsData[movieID][field.name]);
+				});
+				rowHTML += "<td><button type='button' class='btn btn-default addButton' data-movieid='";
+				rowHTML += movieID;
+				rowHTML += "'><span class='glyphicon  glyphicon-plus'></span></button></td>";
+				rowHTML += "</tr>";
+				$('#searchResultsTableBody').append(rowHTML);
 			});
 		}
 	}
@@ -486,10 +506,12 @@ var searchResults = (function() {
 						clearSearchResultsErrorMessage();
 						searchResults.forEach(function(searchResult){
 							var movieID = searchResult._id;
-							searchResultsData[movieID] = {
-								title: searchResult.title,
-								releaseYear: searchResult.year
-							};
+							searchResultsData[movieID] = {};
+							fields.forEach(function(field) {
+								searchResultsData[movieID][field.name] = {
+									value: searchResult[field.CISIname] || "NA"
+								};
+							});
 							searchResultsList.push(movieID);
 						});
 					}
@@ -524,6 +546,7 @@ var searchResults = (function() {
 			});			
 		},
 		removeSearchResult: function(movieID) {
+			var i=0;
 			// Remove search result from search result data
 			delete searchResultsData[movieID];
 			// Remove every occurence of movieID from searchResultsList
