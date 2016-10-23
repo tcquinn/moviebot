@@ -54,43 +54,25 @@ var movies = (function() {
 		}
 	};
 	// Produce HTML for table cell from title/year data
-	var formatTitleYearData = function(titleYearData) {
+	var movieDataCellHTML = function(movieDatum) {
 		var cellHTML = "<td>";
-		if (titleYearData.updating) {
+		if (movieDatum.updating) {
 			cellHTML += "Updating";
 		}
-		else {
-			if (!titleYearData.updated) {
-				cellHTML += "?";
-			}
-			else {
-				cellHTML += titleYearData.value;
-			}
-		};
-		cellHTML += "</td>";
-		return(cellHTML);
-	};
-	// Produce HTML for table cell from streaming service data
-	var formatServiceData = function(serviceData) {
-		var cellHTML = "<td>";
-		if (serviceData.updating) {
-			cellHTML += "Updating";
+		else if (!movieDatum.updated){
+			cellHTML += "?";
 		}
-		else {
-			if (!serviceData.updated) {
-				cellHTML += "?";
+		else if (movieDatum.value) {
+				cellHTML += movieDatum.value;
+		}
+		else if (movieDatum.available) {
+			if (movieDatum.price) {
+				cellHTML += "$" + movieDatum.price;
 			}
 			else {
-				if (serviceData.available) {
-					if (serviceData.price) {
-						cellHTML += "$" + serviceData.price;
-					}
-					else {
-						cellHTML += "<span class='glyphicon glyphicon-ok'></span>";
-					}
-				}
-			}
-		};
+				cellHTML += "<span class='glyphicon glyphicon-ok'></span>";
+			}			
+		}
 		cellHTML += "</td>";
 		return(cellHTML);
 	};
@@ -113,11 +95,8 @@ var movies = (function() {
 		else {
 			movieList.forEach(function(movieID) {
 				rowHTML = "<tr>";
-				titleYearFields.forEach(function(titleYearField) {
-					rowHTML += formatTitleYearData(movieData[movieID][titleYearField.name]);
-				});
-				serviceFields.forEach(function(serviceField) {
-					rowHTML += formatServiceData(movieData[movieID][serviceField.name]);
+				fields.forEach(function(field) {
+					rowHTML += movieDataCellHTML(movieData[movieID][field.name]);
 				});
 				rowHTML += "<td><button type='button' class='btn btn-default updateInfoButton' data-movieid='";
 				rowHTML += movieID;
@@ -436,14 +415,12 @@ var searchResults = (function() {
 		$('#searchResultsTableBody').empty();
 		// Check if search results data is empty
 		if(searchResultsList.length===0) {
-			console.log("Generating empty search result list placeholder");
 			// If yes, display placeholder in table
 			rowHTML = "<tr>";
 			rowHTML += "<td colspan='";
 			rowHTML += fields.length + numSearchResultButtons;
 			rowHTML +="'><em>No search results in list</em></td>";
 			rowHTML += "</tr>";
-			console.log(rowHTML);
 			$('#searchResultsTableBody').append(rowHTML);		
 		}
 		// If no, copy data into table
