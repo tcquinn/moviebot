@@ -77,32 +77,48 @@ var movies = (function() {
 		return(cellHTML);
 	};
 	// Produce HTML for update button
-	var updateButtonHTML = function(movieID) {
+	var updateButtonHTML = function(movieID, disabled) {
 		var cellHTML = "<td>";
-		cellHTML += "<button type='button' class='btn btn-default updateButton' data-movieid='";
+		cellHTML += "<button type='button' class='btn btn-default updateButton";
+		if (disabled) cellHTML += " disabled";
+		cellHTML += "' data-movieid='";
 		cellHTML += movieID;
 		cellHTML += "'><span class='glyphicon glyphicon-refresh'></span></button>";
 		cellHTML += "</td>";
 		return(cellHTML);
 	};
 	// Produce HTML for remove button
-	var removeButtonHTML = function(movieID) {
+	var removeButtonHTML = function(movieID, disabled) {
 		var cellHTML = "<td>";
-		cellHTML += "<button type='button' class='btn btn-default removeButton' data-movieid='";
+		cellHTML += "<button type='button' class='btn btn-default removeButton"
+		if (disabled) cellHTML += " disabled";
+		cellHTML += "' data-movieid='";
 		cellHTML += movieID;
 		cellHTML += "'><span class='glyphicon  glyphicon-remove'></span></button>";
 		cellHTML += "</td>";
 		return(cellHTML);
 	};
+	// Check if any of the fields are updating for a particular movie
+	var isUpdating = function(movieID) {
+		var returnValue = false;
+		fields.forEach(function(field) {
+			if (movieData[movieID][field.name].updating) {
+				returnValue = true;
+			}
+		});
+		return returnValue;
+	};
 	// Produce HTML for movie data table row from movie ID
 	var movieDataRowHTML = function(movieID) {
+		var disabled = false;
 		var rowHTML = "<tr>";
 		if (movieID.length > 0) {
+			disabled = isUpdating(movieID);
 			fields.forEach(function(field) {
 				rowHTML += movieDataCellHTML(movieData[movieID][field.name]);
 			});
-			rowHTML += updateButtonHTML(movieID);
-			rowHTML += removeButtonHTML(movieID);
+			rowHTML += updateButtonHTML(movieID, disabled);
+			rowHTML += removeButtonHTML(movieID, disabled);
 		}
 		else {
 			rowHTML += "<td colspan='";
