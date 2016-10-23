@@ -131,20 +131,11 @@ var movies = (function() {
 	// Display error message associated with movie data
 	var displayMovieDataErrorMessage = function(errorMessage) {
 		// Write error message to page
-		$('#movieDataErrorBox').html(
-			'<div class="alert alert-warning" id="searchResultsDataErrorBox" display="none">' +
+		$('#movieDataErrorBox').append(
+			'<div class="alert alert-warning">' +
 			'<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>' + 
 			errorMessage +
 			'</div>');
-		// Unhide error message section of page
-		$('#movieDataErrorBox').css("display","block")
-	};
-	// Clear error message associated with movie list
-	var clearMovieDataErrorMessage = function() {
-		// Erase error messages from the page
-		$('#movieDataErrorBox').empty();
-		// Hide error message section of page
-		$('#movieDataErrorBox').css("display","none")
 	};
 	// Update movie title and year for a particular movie ID (using CanIStream.It)
 	var updateTitleAndYear = function(movieID) {
@@ -165,8 +156,6 @@ var movies = (function() {
 			// Callback function if request is successful
 			success: function(data, textStatus, jqXHR) {
 				var updateDate = new Date();
-				// Clear any previous error message
-				clearMovieDataErrorMessage();
 				// Check if movie is still in data
 				if(movieID in movieData) {
 					// If yes, copy query results into movie data
@@ -181,7 +170,7 @@ var movies = (function() {
 				// Display an error message
 				displayMovieDataErrorMessage(
 					'Server error encountered when updating title and release year for "' +
-					movieID +
+					movieData[movieID].title.value +
 					'"'
 				);
 			},
@@ -220,8 +209,6 @@ var movies = (function() {
 			// Callback function if request is successful
 			success: function(data, textStatus, jqXHR) {
 				var updateDate = new Date();
-				// Clear any previous error message
-				clearMovieDataErrorMessage();
 				// Check if movie is still in data
 				if(movieID in movieData){
 					// If yes, copy query results into movie data
@@ -237,7 +224,7 @@ var movies = (function() {
 				// Display an error message
 				displayMovieDataErrorMessage(
 					'Server error encountered when updating instant streaming info for "' +
-					movieData[movieID].title +
+					movieData[movieID].title.value +
 					'"'
 				);
 			},
@@ -276,8 +263,6 @@ var movies = (function() {
 			// Callback function if request is successful
 			success: function(data, textStatus, jqXHR) {
 				var updateDate = new Date();
-				// Clear any previous error message
-				clearMovieDataErrorMessage();
 				// Check if movie is still in data
 				if(movieID in movieData) {
 					// If yes, copy results into movie data
@@ -296,7 +281,7 @@ var movies = (function() {
 				// Display an error message
 				displayMovieDataErrorMessage(
 					'Server error encountered when updating streaming rental info for "' +
-					movieData[movieID].title +
+					movieData[movieID].title.value +
 					'"'
 				);
 			},
@@ -469,20 +454,13 @@ var searchResults = (function() {
 	// Display error message associated with search results data
 	var displaySearchResultsDataErrorMessage = function(errorMessage) {
 		// Write error message to page
-		$('#searchResultsDataErrorBox').html(
-			'<div class="alert alert-warning" id="searchResultsDataErrorBox" display="none">' +
+		$('#searchResultsDataErrorBox').append(
+			'<div class="alert alert-warning">' +
 			'<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>' + 
 			errorMessage +
 			'</div>');
 		// Unhide error message section of page
-		$('#searchResultsDataErrorBox').css("display","block")
-	}
-	// Clear error message associated with search results data
-	var clearSearchResultsDataErrorMessage = function() {
-		// Erase error message from page
-		$('#searchResultsDataErrorBox').empty();
-		// Hide error message section of page
-		$('#searchResultsDataErrorBox').css("display","none")
+		// $('#searchResultsDataErrorBox').css("display","block")
 	}
 	// Public functions
 	return {
@@ -507,8 +485,6 @@ var searchResults = (function() {
 				success: function(data, textStatus, jqXHR) {
 					// Check if any search results were returned
 					if(data.length > 0) {
-						// Is yes, clear error messages and copy search results into search results data object
-						clearSearchResultsDataErrorMessage();
 						data.forEach(function(searchResult){
 							var movieID = searchResult._id;
 							searchResultsData[movieID] = {};
