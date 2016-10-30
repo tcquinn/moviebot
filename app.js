@@ -1,17 +1,17 @@
 // app.js
 
 // Call the packages we need
-var express = require('express');
-var morgan = require('morgan'); // Logging
-var path = require('path'); // Building file paths
-var bodyParser = require('body-parser'); // Parsing incoming data
-var session = require('express-session'); // Handling cookies
-// Use memory store until we can figure out how to handle database errors more gracefully
-// var MongoStore = require('connect-mongo')(session); // Storing cookies in our database
-var mongoose = require('mongoose'); // Interfacing with our database
+var express = require('express'); // Web application framework
 var passport = require('passport'); // Creating and authenticating users
+var mongoose = require('mongoose'); // Interfacing with our MongoDB database
+var session = require('express-session'); // Handling cookies
+// Use default memory store until we can figure out how to handle database errors more gracefully
+// var MongoStore = require('connect-mongo')(session); // Storing cookies in our database
+var bodyParser = require('body-parser'); // Parsing incoming data
 var flash = require('connect-flash'); // Passing messages around in a session
+var morgan = require('morgan'); // Logging
 var URI = require('urijs'); // Creating and manipulating URIs
+var path = require('path'); // Building file paths
 
 // Load our configuration variables
 // We can override the values in config.js using environment variables
@@ -36,6 +36,7 @@ console.log("MongoDB URI: " + mongodbURI);
 // Connect to our database
 mongoose.connect(mongodbURI, mongodbConnectOptions);
 
+// Log database events to the console for debugging purposes
 mongoose.connection.on('open', function () {  
   console.log("Mongoose open event"); 
 });
@@ -58,8 +59,6 @@ mongoose.connection.on('error',function (err) {
   console.log(err)
 }); 
 
-
-
 // Configure passport 
 require('./passport-setup')(passport); // Pass passport obect for configuration
 
@@ -71,7 +70,7 @@ app.use(session({
 	secret: sessionSecret,
 	saveUninitialized: true,
 	resave: true
-	// Use memory store until we can figure out how to handle database errors more gracefully
+	// Use default memory store until we can figure out how to handle database errors more gracefully
 	// store: new MongoStore({ mongooseConnection: mongoose.connection })
 }));
 app.use('/static', express.static(path.join(__dirname, 'static'))); // Serve static files from '/static'
