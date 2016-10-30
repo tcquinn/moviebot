@@ -49,7 +49,7 @@ module.exports = function(app, passport) {
     // Movie list page
     // We use route middleware to verify that the user is logged in
     app.get('/list', isLoggedIn, function(req, res) {
-        // Render list.ejs, passing in any flash data, and send
+       // Render list.ejs, passing in any flash data, and send
         res.render('list.ejs', {
             user : req.user, // Get the user out of session and pass to template
  			dangerMessage: req.flash('listDangerMessage'),
@@ -68,6 +68,7 @@ module.exports = function(app, passport) {
 			res.json({message: "Data not in session"});
 		}
 		// Send the movie list
+		console.log("Sending movie list");
         res.json({movieList: req.user.movieList});
     });
 	// Allow the client to save the movie list to the server for this user

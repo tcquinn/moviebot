@@ -73,16 +73,28 @@ app.use(session({
 	resave: true
 	// Use memory store until we can figure out how to handle database errors more gracefully
 	// store: new MongoStore({ mongooseConnection: mongoose.connection })
-})); // Create sessions and store cookies in MongoDB
+}));
+app.use('/static', express.static(path.join(__dirname, 'static'))); // Serve static files from '/static'
 app.use(passport.initialize()); // Initialize passport
 app.use(passport.session()); // Enable passport to write user ID into cookies
 app.use(flash()); // Use connect-flash for flash messages stored in session
-app.use('/static', express.static(path.join(__dirname, 'static'))); // Serve static files from '/static'
 
 // Routes
 
 // Load our routes and pass in our app and fully configured passport
 require('./app/routes.js')(app, passport);
+
+// Error handling
+
+// This will be invoked if there is an uncaught error in the middleware stack
+
+var errorHandler = function(err, req, res, next) {
+	console.log("Error caught by Express error handler")
+	console.log(err);
+	res.status(500);
+	res.render('error', { error: err });
+}
+app.use(errorHandler);
 
 // Launch
 app.listen(expressPort);
